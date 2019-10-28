@@ -89,7 +89,6 @@ def encrypt_s3_copy_key(s3_key, bucket, encrypt_out, strip_string, max_key_lengt
     new_base_key = encrypt_string_with_magic(base_key, max_key_length=max_key_length)
     new_key = os.path.join(encrypt_out, new_base_key) + "." + suffix
     client = get_s3_client()
-    print(s3_key, new_key)
     if (not key_exists(bucket=bucket, key=new_key)):
         return client.copy_object(Bucket=bucket, Key=new_key, CopySource="{0}/{1}".format(bucket, s3_key))
     else:
@@ -258,6 +257,9 @@ def download_s3_file_with_backoff(key, local_filename, *,
             else:
                 cur_key = key
             client.download_file(bucket, cur_key, local_filename)
+            
+            #s3 = boto3.resource('s3')
+            #s3.Bucket(bucket).download_file(cur_key, local_filename)
             return cur_key
         except:
             if num_tries_left == 1:
@@ -280,6 +282,7 @@ def download_from_s3_if_not_local(remote_filename, local_filename=None, *,
     if local_filepath.is_file():
         return
     local_filepath.parent.mkdir(parents=True, exist_ok=True)
+
     if verbose:
         print('{} not available locally, downloading from S3 ... '.format(local_filepath), end='')
     cur_key = download_s3_file_with_backoff(remote_filename, str(local_filepath), bucket=bucket, num_replicas=num_replicas)
@@ -303,7 +306,6 @@ def get_s3_file_bytes(key, *,
         cache_root_path = pathlib.Path(cache_root_path)
         cache_root_path = cache_root_path.resolve()
         local_filename = cache_root_path / key
-
         download_from_s3_if_not_local(key, local_filename, bucket=bucket, verbose=verbose, num_replicas=num_replicas)
         
         if verbose:

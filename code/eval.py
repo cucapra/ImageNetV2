@@ -16,6 +16,10 @@ import torch
 import os
 import time
 
+import flickrapi
+import xml
+#import flickr
+
 torch.backends.cudnn.deterministic = True
 
 all_models = ['alexnet',
@@ -66,11 +70,34 @@ def eval(dataset, models, batch_size):
     with open(dataset_filepath, 'r') as f:
         dataset = json.load(f)
     cur_imgs = [x[0] for x in dataset['image_filenames']]
-
+    print(len(cur_imgs) )
     imgnet = imagenet.ImageNetData()
     cds = candidate_data.CandidateData(load_metadata_from_s3=False, exclude_blacklisted_candidates=False)
+    
+    for i in range(3):
+        print(cur_imgs[i])
+        cd = cds.all_candidates[cur_imgs[i]]
+        print(cd)
+        break
+    flickr = flickrapi.FlickrAPI('f9916e41718d884f77d3f1941f83a242', '40e3e0dca45c841e', format='etree')
+    print(flickr)
+    res=flickr.photos.getSizes(photo_id=cd['id_search_engine'])
+    print( xml.etree.ElementTree.dump(res))
+    import sys
+    sys.exit()
+    data_loader = eval_utils.get_data_loader([cur_imgs[1]],
+                                                     imgnet,
+                                                     cds,
+                                                     image_size='scaled_500',
+                                                     resize_size=256,
+                                                     center_crop_size=224,
+                                                     batch_size=batch_size)
+ 
+    for img, target in data_loader:
+        print(target)
+    import sys
+    sys.exit()
     loader = image_loader.ImageLoader(imgnet, cds)
-
     pbar = tqdm(total=len(cur_imgs), desc='Dataset download')
     img_data = loader.load_image_bytes_batch(cur_imgs, size='scaled_500', verbose=False, download_callback=lambda x:pbar.update(x))
     pbar.close()

@@ -3,9 +3,10 @@ import argparse
 import utils
 from pywren import wrenconfig as wc
 import pywren
-
+import sys
 def encrypt_all_keys_in_prefix(bucket, prefix, encrypt_out, strip_string, use_pywren):
     keys = utils.list_all_keys(prefix)
+    print(keys)
     if (use_pywren):
         chunked_keys = utils.chunks(keys, 500)
         def pywren_job(key_chunk):
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("--pywren", default=False, action='store_const', const=True)
     parser.add_argument("prefix")
     args = parser.parse_args()
+    print(args)
     encrypt_all_keys_in_prefix(args.bucket, args.prefix, args.encrypt_out, args.strip_string, args.pywren)
 
 

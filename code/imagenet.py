@@ -46,10 +46,10 @@ class ImageNetData:
         else:
             assert cache_root_path is None
             self.cache_root_path = None
-
         metadata_filename = 'metadata/imagenet_metadata_2018-09-14_01-26-58_UTC.pickle'
         num_replicas = 10
         metadata_file_bytes = self.get_s3_file_bytes(metadata_filename, verbose=verbose, num_replicas=num_replicas)
+        print('hello')
         tmp_metadata = pickle.loads(metadata_file_bytes)
         self.train_imgs_by_wnid = tmp_metadata['train_imgs_by_wnid']
         self.val_imgs_by_wnid = tmp_metadata['val_imgs_by_wnid']
