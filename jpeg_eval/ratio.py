@@ -16,7 +16,7 @@ def read_qtable(qname,i=0):
     #same as libjpeg requirements, done by space
     qtable = np.loadtxt(qname,dtype=np.int)
     if i==0 and qtable.reshape(-1).shape[0] == 64 or i==1:
-        return qtable.reshape((8,8))
+        return qtable.reshape((8,8,-1))[0]
     else:
         return qtable.reshape((3,8,8))
 
