@@ -61,7 +61,7 @@ def parse_args(args):
         Integer. Default:25')
     
     parser.add_argument('--val_name', type=str,\
-        default='val',\
+        default='/data/zhijing/flickrImageNetV2/matched_frequency_train/val/',\
         help='Directory for validation dataset. \
         String. Default:"val" ') 
     parser.add_argument('--feature_extract',action = 'store_true')
@@ -267,8 +267,8 @@ def load_data(args, input_size):
     }
     print("Initializing Datasets and Dataloaders...")
     folders = {
-        'train':os.path.join(args.data_dir, 'train'),
-        'val':os.path.join(args.data_dir, args.val_name) 
+        'train':args.data_dir,#os.path.join(args.data_dir, 'train'),
+        'val':args.val_name#os.path.join(args.data_dir, args.val_name) 
     }
     # Create training and validation datasets
     image_datasets = {x: datasets.ImageFolder(folders[x], data_transforms[x]) for x in ['train', 'val']}
@@ -288,8 +288,8 @@ def create_optimizer(args, model_ft):
             params_to_learn.append(param)
             print(name)
                 
-    optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    #optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
+    #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
     return optimizer_ft
 
    

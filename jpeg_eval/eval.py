@@ -87,7 +87,6 @@ def run(args):
         for ii, (img_input, target) in enumerable:
             img_input = img_input.cuda(non_blocking=True)
             _, output_index = pt_model(img_input).topk(k=5, dim=1, largest=True, sorted=True)
-            print(output_index, target)
             output_index = output_index.cpu().numpy()
             predictions.append(output_index)
             for jj, correct_class in enumerate(target.cpu().numpy()):

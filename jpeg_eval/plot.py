@@ -23,7 +23,7 @@ def identify_pareto(scores):
                 break
     # Return ids of scenarios on pareto front
     return population_ids[pareto_front]
-ga_list = glob.glob('ga_selection_*_*.csv')
+ga_list = glob.glob('csv/ga_selection_*_*.csv')
 print(ga_list)
 rate=[]
 acc1=[]
@@ -34,34 +34,37 @@ for name in ga_list:
 g5 = (rate,acc1)
 #df  = pd.read_csv("ratio.csv")
 #pl = df.plot(kind='scatter',x='Comp Rate',y='Acc', s=30, color ='Blue', label='random jpeg')
-df = pd.read_csv("sorted.csv")
-scores=np.array((df['rate'],df['acc1']))
-scores=np.swapaxes(scores,0,1)
-indexes=identify_pareto(scores)
-np.save('pareto',indexes)
-print(np.load('pareto.npy'))
+term = 'rate'#rate
+df = pd.read_csv("sorted_psnr.csv")
+psnr = (df['psnr_mean'],df[term])
+#scores=np.array((df['psnr_mean'],df['acc1']))
+#scores=np.swapaxes(scores,0,1)
+#indexes=identify_pareto(scores)
+#np.save('pareto',indexes)
+indexes = np.load('pareto.npy')
 #g1 = (df['rate'],df['acc1'])
-g1 = (df['rate'][indexes],df['acc1'][indexes])
+g1 = (df['psnr_mean'][indexes],df[term][indexes])
 np.set_printoptions(threshold=sys.maxsize)
-df = pd.read_csv("ga_selection_multi.csv")
+df = pd.read_csv("csv/ga_selection_multi.csv")
 scores=np.array((df['rate'],df['acc1']))
 scores=np.swapaxes(scores,0,1)
 indexes=identify_pareto(scores)
 g2 = (df['rate'][:64],df['acc1'][:64])
 g3 = (df['rate'][indexes],df['acc1'][indexes])
-df = pd.read_csv("standard_part.csv")
-g4 = (df['rate'][1:],df['acc1'][1:])
+df = pd.read_csv("csv/standard.csv")
+g4 = (df['rate'][1:20],df['acc1'][1:20])
 coef = np.polyfit(g3[0],g3[1], 2)
 
 
 
 #print(coef)
-markers = ["." , "," , "o" , "v" , "^" , "<", ">"]
-data = (g4, g1, g2, g3,g5)
-colors = ['r','g','b','y','c', 'm', 'k']#("red","blue",'yellow','green')
+markers = ["." , ","]# , "o" , "v" , "^" , "<", ">"]
+data = (psnr,g1)
+#data = (g4, g1, g2, g3,g5)
+colors = ['r','g']#,'b','y','c', 'm', 'k']#("red","blue",'yellow','green')
 
-
-groups = ('standard',"pareto for RS", "pareto one for RS", "pareto with GA",'individual GA')
+groups = ('sorted random psnr', 'pareto psnr')
+#groups = ('standard',"pareto for RS", "pareto one for RS", "pareto with GA",'individual GA')
 
 # Create plot
 fig = plt.figure()
@@ -74,10 +77,12 @@ for data, color, group,m in zip(data, colors, groups,markers):
     a = 1 if group=='standard' or 'pareto' else 0.3
     ax.scatter(x, y, alpha=a, c=color, marker = m, edgecolors='none', s=30, label=group)
 
-plt.title('Sorted Random vs. Standard')
+#plt.plot(df['rate'][10], [df['acc1'][10]], marker='o', markersize=3, color="red")
+
+#plt.title('CR pareto vs Acc')
 plt.legend(loc=0)
-plt.xlabel('rate')
-plt.ylabel('acc')
+plt.xlabel('psnr') #rate
+plt.ylabel(term)
 plt.savefig('rate_qtable.png')
 plt.show()
 
