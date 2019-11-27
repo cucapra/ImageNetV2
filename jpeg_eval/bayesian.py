@@ -24,16 +24,13 @@ create_dir(cmp_dir)
 qtable_dir = os.path.join(optimize_root, 'qtables')
 create_dir(qtable_dir)
 
-csv_name = 'csv/bayesian2.csv'
+csv_name = 'csv/bayesian3.csv'
 uncmp_root = '/mnt/tmpfs/matched_frequency_part/'
 uncmp_mean = 150582
 dir_list = os.listdir(uncmp_root)
 file_list = {x:os.listdir(os.path.join(uncmp_root,x)) for x in dir_list }
 
-df = pd.read_csv(csv_name)
-scores = np.array((df['rate'],df['acc1']))
-scores = np.swapaxes(scores,0,1)
-cnt = scores.shape[0]
+cnt = 0
 def black_box_function(**p):
 #q0,q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24,q25,q26,q27,q28,q29,q30,q31,q32,q33,q34,q35,q36,q37,q38,q39,q40,q41,q42,q43,q44,q45,q46,q47,q48,q49,q50,q51,q52,q53,q54,q55,q56,q57,q58,q59,q60,q61,q62,q63):
     global cnt, file_list,dir_list,uncmp_root,uncmp_mean,cmp_dir,optimize_root,qtable_dir
@@ -63,9 +60,36 @@ def black_box_function(**p):
     cnt += 1
     return fitness
 
-standard = ratio.read_qtable('qtables/qtable.txt')[0]
+#standard = ratio.read_qtable('qtables/qtable.txt')[0]
 # Bounded region of parameter space
-pbounds = {'q'+str(8*i+j).zfill(2): (max(0,standard[i][j]-10),min(255,standard[i][j]+10)) for i in range(8) for j in range(8)}
+#load_logs(optimizer, logs=["logs/logs2.json"]);
+df = pd.read_csv("csv/sorted.csv")
+scores = np.array((df['rate'],df['acc1']))
+scores = np.swapaxes(scores,0,1)
+indexs = np.load('pareto.npy')
+print(indexs.shape)
+qts = []
+for ind in indexs:
+    qname=("/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable"+str(ind)+".txt")
+    if df['rate'][ind] > 21 and df['rate'][ind] < 23:
+        print(ind)
+        qt=ratio.read_qtable(qname,0)
+        qts.append(qt.reshape((-1)))
+        qts.append(np.transpose(qt).reshape((-1)))
+qtmean =np.rint(np.clip(np.array(qts).mean(axis=0), 1, 255))
+qtstd = np.array(qts).std(axis=0)
+#print(qtmean.reshape([8,8]))
+#print((np.array(qts).std(axis=0)/qtmean).reshape([8,8]))
+qtmax = np.rint(np.clip(np.array(qts).max(axis=0)+qtstd*1.5, 1, 255))
+qtmin = np.rint(np.clip(np.array(qts).min(axis=0)-qtstd*1.5, 1, 255))
+#print(qtmax.reshape([8,8]))
+#print(qtmin.reshape([8,8]))
+#pbounds = {'q'+str(8*i+j).zfill(2): (max(0,standard[i][j]-10),min(255,standard[i][j]+10)) for i in range(8) for j in range(8)}
+pbounds = {'q'+str(i).zfill(2): (qtmin[i], qtmax[i]) for i in range(64)} 
+pmt = 1
+for i in range(len(pbounds)):
+    pmt *= pbounds['q'+str(i).zfill(2)][1]-pbounds['q'+str(i).zfill(2)][0]
+print(pmt)
 btypes = {'q'+str(i).zfill(2): int for i in range(64)}
 
 optimizer = BayesianOptimization(
@@ -75,19 +99,17 @@ optimizer = BayesianOptimization(
     random_state=1,
 )
 
-load_logs(optimizer, logs=["logs/logs2.json"]);
-##indexs = [x for x in np.load('pareto.npy')]
-#logger = JSONLogger(path="logs/logs2.json") #it clears logs.json first
-#optimizer.subscribe(Events.OPTMIZATION_STEP, logger)
-#for ind in range(scores.shape[0]):
+
+logger = JSONLogger(path="logs/logs3.json") #it clears logs.json first
+optimizer.subscribe(Events.OPTMIZATION_STEP, logger)
+#for ind in indexs:
 #    fitness = diff_fit(scores[ind][1], scores[ind][0])
-#    #qname=("/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable"+str(ind)+".txt")
-#    qname="/mnt/tmpfs/bo_cache/qtables/qtable"+str(ind)+".txt"
-#    qtable=ratio.read_qtable(qname).reshape((-1))
+#    qname=("/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable"+str(ind)+".txt")
+#    #qname="/mnt/tmpfs/bo_cache/qtables/qtable"+str(ind)+".txt"
+#    qtable=ratio.read_qtable(qname,0).reshape((-1))
 #    qtable_dic = {'q'+str(i).zfill(2): qtable[i] for i in range(64)}
 #    optimizer.register(qtable_dic,fitness)
-#sys.exit()
 
-optimizer.maximize(init_points=0, n_iter=500, acq="ei", xi=1e-3)
+optimizer.maximize(init_points=100, n_iter=500, acq="ei", xi=1e-3)
 print(optimizer.max)
  
