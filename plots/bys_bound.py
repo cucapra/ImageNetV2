@@ -45,7 +45,7 @@ def get_data(group, **param):
         df = pd.read_csv("csv/sorted.csv")
         return (df['rate'][index], df['acc1'][index])
     if 'bayesian' in group:
-        df = pd.read_csv('csv/bayesian3.csv')
+        df = pd.read_csv('csv/'+group+'.csv')
         return (df['rate'][index], df['acc1'][index])
     if 'standard' in group:
         df = pd.read_csv('csv/'+group+'.csv')
@@ -63,8 +63,9 @@ sorted_index = np.logical_and(rates > 21.33,rates < 22.81)
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
 groups = {  
-            'bayesian': { 'index': slice(None) },
             'sorted': { 'index': sorted_index },
+            'bayesian3': { 'index': slice(None) },
+            'bayesian5': { 'index': slice(None) },
          }
 
 # Create plot

@@ -42,7 +42,7 @@ def get_data(group, **param):
         df = pd.read_csv("csv/sorted.csv")
         return (df['rate'][index], df['acc1'][index])
     if 'bayesian' in group:
-        df = pd.read_csv('csv/bayesian2.csv')
+        df = pd.read_csv('csv/'+group+'.csv')
         rate = df['rate'][index]
         coef = np.array([-6.40782216e-05,-1.81228974e-03,6.46255250e-01])
         diff = df['acc1'][index] - [np.sum(np.array([r**2,r,1])*coef) for r in rate]
@@ -63,7 +63,9 @@ sorted_index = np.logical_and(rates > 21.33,rates < 22.81)
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
 groups = {  
-            'bayesian': { 'index': slice(None) },
+            #'bayesian': { 'index': slice(None) },
+            'bayesian5': { 'index': slice(None) },
+
             #'sorted': { 'index': sorted_index },
          }
 
@@ -85,7 +87,7 @@ for k in groups.keys():
 #plt.title('CR pareto vs Acc')
 plt.legend(loc=0)
 plt.xlabel('i') 
-plt.ylabel('acc')
+plt.ylabel('fitness')
 os.chdir('../plots/')
 plt.savefig(os.path.basename(__file__).replace('.py','.png'))
 plt.show()

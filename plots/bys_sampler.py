@@ -41,59 +41,30 @@ def get_data(group, **param):
 #df  = pd.read_csv("ratio.csv")
 #pl = df.plot(kind='scatter',x='Comp Rate',y='Acc', s=30, color ='Blue', label='random jpeg')
 #term = 'rate'#rate
-    if 'random' in group:
-        df = pd.read_csv("csv/random.csv")
-        return (df['rate'][index], df['acc1'][index])
-
     if 'sorted' in group:
         df = pd.read_csv("csv/sorted.csv")
         return (df['rate'][index], df['acc1'][index])
+    if 'bayesian' in group:
+        df = pd.read_csv('csv/bayesian5.csv')
+        return (df['rate'][index], df['acc1'][index])
     if 'standard' in group:
         df = pd.read_csv('csv/'+group+'.csv')
-        term = df['i'].str.isnumeric()
-        if start != None:
+        term = df['i'].astype(str).str.isnumeric()
+        if param['start'] != None:
             term = df['i'].str.startswith(param['startwith']) 
-        return df['rate'][term][index], df['acc1'][term][index]
-    if group == 'psnr':
+        return (df['rate'][term][index], df['acc1'][term][index])
+    if 'psnr' in group:
         df = pd.read_csv('csv/sorted_psnr.csv')
-        return (df['rate'][index], df['acc1'][index])
-#psnr = (df['psnr_mean'],df[term])
-#scores=np.array((df['psnr_mean'],df['acc1']))
-#scores=np.swapaxes(scores,0,1)
-#indexes=identify_pareto(scores)
-#np.save('pareto',indexes)
-#indexes = np.load('pareto.npy')
-#g1 = (df['rate'][indexes],df['acc1'][indexes])
-#g2 = (df['rate'],df['acc1'])
-##g1 = (df['psnr_mean'][indexes],df[term][indexes])
-#np.set_printoptions(threshold=sys.maxsize)
-#df = pd.read_csv("csv/ga_selection_multi.csv")
-#scores=np.array((df['rate'],df['acc1']))
-#scores=np.swapaxes(scores,0,1)
-#indexes=identify_pareto(scores)
-#g3 = (df['rate'][indexes],df['acc1'][indexes]) #g3: pareto of ga
-#df = pd.read_csv("csv/standard_part.csv")
-#g4 = (df['rate'][1:20],df['acc1'][1:20])
-#print(coef)
+        return (df['rate'][index], df['psnr_mean'][index])
 
-
-
-markers = ["o" , "," , "o" , "v" , "^" , "<", ">"]#.
-#data = (psnr,g1)
-#groups = ('sorted random psnr', 'pareto psnr')
-#data = (g2, g4,g1)
-colors = ['r','g','b','y','c', 'm', 'k']#("red","blue",'yellow','green')
-pareto1000 = np.load('pareto1000.npy')
-df = pd.read_csv('csv/sorted.csv')
-scores = np.array((df['rate'],df['acc1']))
-scores = np.swapaxes(scores,0,1)
-pareto = identify_pareto(scores)
-np.save('pareto', pareto)
+rates = np.array(pd.read_csv('csv/sorted.csv')['rate'])
+sorted_index = np.logical_and(rates > 9,rates < 28)
+#scores = np.array((df['rate'],df['acc1']))
+#scores = np.swapaxes(scores,0,1)
+#pareto = identify_pareto(scores)
 groups = {  
-            'random': {'index':slice(None)},
-            'sorted': { 'index': slice(None) },
-            'sorted_pareto1000': { 'index': pareto1000 },
-            'sorted_pareto': { 'index': pareto },
+            'sorted': { 'index': sorted_index },
+            'bayesian': { 'index': slice(None) },
          }
 
 # Create plot
@@ -103,16 +74,18 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #x = np.linspace(min(df['rate']), max(df['rate']), 1000)
 #y = [ np.sum(np.array([a**2,a,1])*coef) for a in x]
 #ax.plot(x,y)
+xmax = 0
+xmin = 0
 for k in groups.keys():
     x, y = get_data(k, **groups[k])
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=30, label=k)
+    ax.scatter(x, y, s=30, label=k.replace('_part1', ''))
 
 
 #plt.title('CR pareto vs Acc')
 plt.legend(loc=0)
-plt.xlabel('rate') #rate
-plt.ylabel('acc1')
+plt.xlabel('rate') 
+plt.ylabel('acc')
 os.chdir('../plots/')
 plt.savefig(os.path.basename(__file__).replace('.py','.png'))
 plt.show()

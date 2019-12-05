@@ -13,11 +13,14 @@ term = 'acc1'#rate
 df = pd.read_csv("csv/standard_"+part+".csv")
 ga = df['i'].str.startswith("/data/")
 g1 = (df['rate'][ga],df['acc1'][ga])
+
 sort = df['i'].str.startswith("qtable")
 g2 = (df[sort]['rate'], df[sort]['acc1'])
+
 st = df['i'].str.isnumeric()
 g3 = (df['rate'][st][1:], df['acc1'][st][1:])
 print(g3)
+#df = pd.read_csv("csv/standard_part3.csv")
 
 coef = np.polyfit(g2[0],g2[1], 2)
 

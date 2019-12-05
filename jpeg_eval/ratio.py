@@ -5,7 +5,8 @@ import re
 from ast import literal_eval
 import argparse
 from comp_utils import *
-
+import pandas as pd
+import random
 def read_qtable(qname,i=-1):
     #------old read from file--------
     #e.g [[1,2],[2,3]]
@@ -27,6 +28,24 @@ def write_qtable(qtable,qname='qtable.txt'):
     f.write(' '+str_qtable)
     f.close()
     return qtable
+def bound_qtable_generate(qtable_name):
+    df = pd.read_csv("csv/sorted.csv")
+    scores = np.array((df['rate'],df['acc1']))
+    scores = np.swapaxes(scores,0,1)
+    indexs = np.load('pareto.npy')
+    qts = []
+    for ind in indexs:
+        qname=("/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable"+str(ind)+".txt")
+        if df['rate'][ind] > 21 and df['rate'][ind] < 23:
+            qt=read_qtable(qname,0)
+            qts.append(qt.reshape((-1)))
+            qts.append(np.transpose(qt).reshape((-1)))
+    qtstd = np.array(qts).std(axis=0)
+    qtmax = np.rint(np.clip(np.array(qts).max(axis=0)+qtstd*0.5, 1, 255))
+    qtmin = np.rint(np.clip(np.array(qts).min(axis=0)-qtstd*0.5, 1, 255))
+    bound_qt = np.array([random.randint(qtmin[i], qtmax[i]) for i in range(64)]).reshape(8,8)
+    return write_qtable(bound_qt, qtable_name)
+
 
 def perturbed_qtable_generate(input_name, qtable_name, step_range = 3):
     qtable = read_qtable(input_name) 

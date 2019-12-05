@@ -45,22 +45,22 @@ def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable):
             os.system(execute)
 uncmp_root = '/mnt/tmpfs/matched_frequency_part/'
 uncmp_mean = 150582
-optimize_root = '/mnt/tmpfs/sorted_cache/'
+optimize_root = '/data/zhijing/flickrImageNetV2/random_cache/'#'/mnt/tmpfs/sorted_cache/'
 create_dir(optimize_root)
 #cmp_dir = os.path.join(optimize_root, 'dataset_pareto_take_firstq')
 cmp_dir = optimize_root
 create_dir(cmp_dir) 
 dir_list = os.listdir(uncmp_root)
 file_list = {x:os.listdir(os.path.join(uncmp_root,x)) for x in dir_list }
-qtable_root = os.path.join('/data/zhijing/flickrImageNetV2/sorted_cache/','qtables')
+#qtable_root = os.path.join('/data/zhijing/flickrImageNetV2/sorted_cache/','qtables')
 qtable_root = os.path.join(optimize_root, 'qtables')
 create_dir(qtable_root)
 #data = [x for x in np.load('pareto.npy')]
 for i in range(0,1000):#len(data)):
     qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
     print(qname)
-    #ratio.random_qtable_generate(qname)
-    ratio.sorted_qtable_generate(qname)
+    ratio.random_qtable_generate(qname)
+    #ratio.sorted_qtable_generate(qname)
     ts = []
     partition = int(len(dir_list)/32)
     for j,k in enumerate(range(0,len(dir_list),partition)):
@@ -76,5 +76,5 @@ for i in range(0,1000):#len(data)):
     acc1,acc5 = eval.run(sys.argv.append(cmp_dir) )
     row = [i,acc1,acc5,r,cmp_mean,cmp_std]
     print(row)
-    store_csv_check(row,"csv/sorted.csv")
+    store_csv_check(row,"csv/random.csv")
 

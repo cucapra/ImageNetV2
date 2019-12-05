@@ -66,6 +66,7 @@ def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable):
             file_out = os.path.join(cmp_dir,dir_in,file_in.replace('bmp','jpg'))
             execute = "./cjpeg -outfile "+file_out+" -quality 50 -qtable "+tmp_qtable+" -qslots 0 "+os.path.join(uncmp_root,dir_in,file_in)
             os.system(execute)
+
 def compress_quality(quality, dir_list, file_list, cmp_dir, uncmp_root):
     for dir_in in dir_list:
         if not os.path.exists(os.path.join(cmp_dir,dir_in) ):

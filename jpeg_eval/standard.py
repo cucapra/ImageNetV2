@@ -15,13 +15,13 @@ import click
 import cv2
 import math
 from utils import *
-part = 'topimages'
+part = 'part3'
 def run():
-    #uncmp_root = '/data/zhijing/flickrImageNetV2/matched_frequency_part'+part#part,224
-    uncmp_root = '/data/zhijing/flickrImageNetV2/'+part+'_224'
+    uncmp_root = '/data/zhijing/flickrImageNetV2/matched_frequency_'+part#part,224
+    #uncmp_root = '/data/zhijing/flickrImageNetV2/'+part+'_224'
     uncmp_mean = 150582
-    #optimize_root = '/data/zhijing/flickrImageNetV2/cmp/matched_part'+part
-    optimize_root = '/data/zhijing/flickrImageNetV2/cmp/'+part
+    optimize_root = '/data/zhijing/flickrImageNetV2/cmp/matched_'+part
+    #optimize_root = '/data/zhijing/flickrImageNetV2/cmp/'+part
     create_dir(optimize_root)
     cmp_dir = os.path.join(optimize_root,'cache')
     create_dir(cmp_dir)
@@ -41,7 +41,7 @@ def run():
             res.append( int(re.findall('\d+',ga_f)[0]) )
             
         indexes.append(os.path.join(ga_root,ga_dir,'qtables','ga'+str(max(res))+'_0.txt'))
-    for qname in indexes:
+    for qname in range(0):#indexes:
         
         if not os.path.exists(cmp_dir):
             os.makedirs(cmp_dir)
@@ -68,9 +68,15 @@ def run():
         store_csv_check(row, csv_name)
 
 
-    indexes = np.load('pareto.npy')
+    indexes = np.load('pareto1000.npy')
+    wrong = np.load('pareto.npy')
+
+    res = np.array(list(set(indexes[indexes<=842])^set(wrong[wrong<=842])))
+    indexes = sorted(np.hstack((res,indexes[indexes > 842])))
+    
     for i in indexes:
         qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
+        print(qname)
         if not os.path.exists(cmp_dir):
             os.makedirs(cmp_dir)
         #if i == 0:
@@ -100,8 +106,8 @@ def run():
         cmp_dir = os.path.join(optimize_root,'quality'+str(i))
         if not os.path.exists(cmp_dir):
             os.makedirs(cmp_dir)
-        #if i == 0:
-        #    shutil.copyfile('qtables/qtable.txt',tmp_qtable)
+        if i == 0:
+            shutil.copyfile('qtables/qtable.txt',tmp_qtable)
 
         ts = []
         partition = int(len(dir_list)/20)
