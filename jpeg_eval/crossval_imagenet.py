@@ -162,15 +162,15 @@ def run_standard(args):
 # to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
 # raise Exception('to_bmp')
 
-gpu_id = 3
-# csv_name = 'csv/crossval_imagenet_bayesian5_greater25.csv'
-csv_name = 'csv/crossval_imagenet_standard.csv'
+gpu_id = 0
+csv_name = 'csv/crossval_imagenet.csv'
+# csv_name = 'csv/crossval_imagenet_standard.csv'
 optimize_root = '/data/zh272/temp/'
-# qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
-qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
-# metrics_file = "csv/sorted.csv"
+qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
+# qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
+metrics_file = "csv/sorted.csv"
 # metrics_file = "csv/bayesian5.csv"
-metrics_file = "csv/standard.csv"
+# metrics_file = "csv/standard.csv"
 uncmp_root = '/data/ILSVRC2012/val_bmp'
 
 
@@ -204,22 +204,25 @@ if os.path.isfile(csv_name):
 partition = int(len(dir_list)/20)#20
 arg_list = []
 
-for ind in range(5,101,5):
-    logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
-    run_standard((ind,logs))
+### For standard JPEG table with different quality
+# for ind in range(5,101,5):
+#     logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
+#     run_standard((ind,logs))
 
-# # scores = np.array((df['rate'],df['acc1']))
-# # scores = np.swapaxes(scores,0,1)
-# # indexs = np.load('pareto.npy')
-# indexs = np.load('pareto1000.npy')
-# # pool = Pool(4)
-# for ind in indexs:
-#     # if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
-#     # if df['rate'][ind] <= 20 and ind not in hist:
-#     # if df['rate'][ind] >= 30 and ind not in hist:
-#     # if df['rate'][ind] <= 25 and ind not in hist:
-#     if df['rate'][ind] > 25 and ind not in hist:
-#         logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
-#         run((ind, logs))
-#         # arg_list.append((ind, logs))
-# # pool.map(run, arg_list)
+
+### For customized JPEG tables
+# scores = np.array((df['rate'],df['acc1']))
+# scores = np.swapaxes(scores,0,1)
+# indexs = np.load('pareto.npy')
+indexs = np.load('pareto1000.npy')
+# pool = Pool(4)
+for ind in indexs:
+    if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
+    # if df['rate'][ind] <= 20 and ind not in hist:
+    # if df['rate'][ind] >= 30 and ind not in hist:
+    # if df['rate'][ind] <= 25 and ind not in hist:
+    # if df['rate'][ind] > 25 and ind not in hist:
+        logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
+        run((ind, logs))
+        # arg_list.append((ind, logs))
+# pool.map(run, arg_list)
