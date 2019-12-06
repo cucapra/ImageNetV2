@@ -1,6 +1,5 @@
 from timeit import default_timer as timer
 import math
-import click
 import numpy as np
 import torchvision.models
 from tqdm import tqdm
@@ -68,7 +67,7 @@ def run(args):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
     image_datasets = datasets.ImageFolder(dataset_filename, data_transforms)
-    data_loader = torch.utils.data.DataLoader(image_datasets, batch_size=batch_size,shuffle=True,num_workers=4)
+    data_loader = torch.utils.data.DataLoader(image_datasets, batch_size=batch_size,shuffle=True,num_workers=0)
     pt_model = getattr(torchvision.models, model)(pretrained=True)
     #if (torch.cuda.is_available()):
     pt_model = pt_model.cuda()
@@ -82,9 +81,9 @@ def run(args):
 
     with torch.no_grad():
         enumerable = enumerate(data_loader)
-        total = int(math.ceil(len(data_loader) / batch_size))
-        desc = 'Batch'
-        enumerable = tqdm(enumerable, total=total, desc=desc)
+        # total = int(math.ceil(len(data_loader) / batch_size))
+        # desc = 'Batch'
+        # enumerable = tqdm(enumerable, total=total, desc=desc)
         for ii, (img_input, target) in enumerable:
             if num_images>=10000:
                 break
@@ -104,10 +103,15 @@ def run(args):
     top1_acc = num_top1_correct / num_images
     top5_acc = num_top5_correct / num_images
     total_time = end - start
-    tqdm.write('    Evaluated {} images'.format(num_images))
-    tqdm.write('    Top-1 accuracy: {:.2f}'.format(100.0 * top1_acc))
-    tqdm.write('    Top-5 accuracy: {:.2f}'.format(100.0 * top5_acc))
-    tqdm.write('    Total time: {:.1f}  (average time per image: {:.2f} ms)'.format(total_time, 1000.0 * total_time / num_images))
+    # tqdm.write('    Evaluated {} images'.format(num_images))
+    # tqdm.write('    Top-1 accuracy: {:.2f}'.format(100.0 * top1_acc))
+    # tqdm.write('    Top-5 accuracy: {:.2f}'.format(100.0 * top5_acc))
+    # tqdm.write('    Total time: {:.1f}  (average time per image: {:.2f} ms)'.format(total_time, 1000.0 * total_time / num_images))
+
+    print('    Evaluated {} images'.format(num_images))
+    print('    Top-1 accuracy: {:.2f}'.format(100.0 * top1_acc))
+    print('    Top-5 accuracy: {:.2f}'.format(100.0 * top5_acc))
+    print('    Total time: {:.1f}  (average time per image: {:.2f} ms)'.format(total_time, 1000.0 * total_time / num_images))
 
     return top1_acc,top5_acc
 

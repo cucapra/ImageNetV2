@@ -71,7 +71,7 @@ def compress_quality(quality, dir_list, file_list, cmp_dir, uncmp_root):
             os.makedirs(os.path.join(cmp_dir,dir_in) )
         for file_in in file_list[dir_in]:
             file_out = os.path.join(cmp_dir,dir_in,file_in.replace('bmp','jpg'))
-            execute = "./cjpeg -outfile "+file_out+" -quality "+quality+" "+os.path.join(uncmp_root,dir_in,file_in)
+            execute = "~/libjpeg/cjpeg -outfile "+file_out+" -quality "+quality+" "+os.path.join(uncmp_root,dir_in,file_in)
             os.system(execute)
 
 def create_dir(n):
@@ -90,6 +90,7 @@ def run(args):
     logs += 'Compressing...\n'
     # compress(dir_list,file_list,cmp_dir,uncmp_root,qtable_file)
     # raise Exception('fsfsfs')
+
     ts = []
     for j,k in enumerate(range(0,len(dir_list),partition)):
         ts.append(threading.Thread(target=compress,args=(dir_list[k:k+partition],file_list,cmp_dir,uncmp_root,qtable_file)) ) 
@@ -115,6 +116,41 @@ def run(args):
     # break
     print(logs)
 
+def run_standard(args):
+    ind,logs = args
+    start = time.time()
+    
+    cmp_dir = os.path.join(optimize_root, 'standard_qtable_'+str(ind))
+    create_dir(cmp_dir)
+
+    ### compress dataset
+    logs += 'Compressing...\n'
+
+    ts = []
+    for j,k in enumerate(range(0,len(dir_list),partition)):
+        ts.append( threading.Thread(target=compress_quality,args=(str(ind),dir_list[k:k+partition],file_list,cmp_dir,uncmp_root))) 
+        ts[j].start()
+    for t in ts:
+        t.join()
+    cmp_size = get_size(cmp_dir)
+    cmp_mean,cmp_std = cmp_size.mean(), cmp_size.std()
+    rate = uncmp_mean/cmp_mean
+    print('--cr: {}({}/{})'.format(rate, uncmp_mean, cmp_mean))
+
+    ### evaluate model
+    logs += 'Evaluating...\n'
+    sys.argv = ['skip','--dataset']
+    acc1,acc5 = evaluate.run(sys.argv.append(cmp_dir))
+
+    fitness = utils.diff_fit(acc1,rate)
+    logs += '--acc1:{}, acc5:{}, fitness:{}\n'.format(acc1,acc5,fitness)
+    row = [ind, acc1,acc5,rate,ind]
+    utils.store_csv_check(row,csv_name,['ind','acc1','acc5','rate','quality'])
+    _elapse = time.time() - start
+    logs += 'Time: {:.1f}h\n'.format(_elapse/3600)
+    # break
+    print(logs)
+    
 
 ### convert jpeg images to bmp
 # dir_list = os.listdir('/data/ILSVRC2012/val')
@@ -126,15 +162,23 @@ def run(args):
 # to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
 # raise Exception('to_bmp')
 
+gpu_id = 3
+# csv_name = 'csv/crossval_imagenet_bayesian5_greater25.csv'
+csv_name = 'csv/crossval_imagenet_standard.csv'
 optimize_root = '/data/zh272/temp/'
-create_dir(optimize_root)
-qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
-# qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
-create_dir(qtable_dir)
-
+# qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
+qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
+# metrics_file = "csv/sorted.csv"
+# metrics_file = "csv/bayesian5.csv"
+metrics_file = "csv/standard.csv"
 uncmp_root = '/data/ILSVRC2012/val_bmp'
-uncmp_mean,uncmp_std = 687300.03404, 1118486.0851240403
 
+
+os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
+create_dir(optimize_root)
+create_dir(qtable_dir)
+df = pd.read_csv(metrics_file)
+uncmp_mean,uncmp_std = 687300.03404, 1118486.0851240403
 # uncmp_size = get_size(uncmp_root)
 # uncmp_mean,uncmp_std = uncmp_size.mean(), uncmp_size.std()
 # print(uncmp_mean,uncmp_std)
@@ -147,7 +191,6 @@ for x in dir_list:
     if os.path.isdir(temp_dir):
         file_list[x] = os.listdir(temp_dir)
 
-csv_name = 'csv/crossval_imagenet.csv'
 hist = set()
 if os.path.isfile(csv_name):
     with open(csv_name) as csvfile:
@@ -157,28 +200,26 @@ if os.path.isfile(csv_name):
                 continue
             hist.add(int(row[0]))
 
-df = pd.read_csv("csv/sorted.csv")
-# scores = np.array((df['rate'],df['acc1']))
-# scores = np.swapaxes(scores,0,1)
-# indexs = np.load('pareto.npy')
-indexs = np.load('pareto1000.npy')
 
 partition = int(len(dir_list)/20)#20
 arg_list = []
 
-# pool = Pool(4)
-for ind in indexs:
-    if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
-        logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
-        run((ind, logs))
-        # raise Exception('ssss')
-        # jobs.append(multiprocessing.Process(target=run, args=(ind, logs)))
-        # p.map(run, (ind, logs))
-        arg_list.append((ind, logs))
-# pool.map(run, arg_list)
+for ind in range(5,101,5):
+    logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
+    run_standard((ind,logs))
 
-# qtstd = np.array(qts).std(axis=0)
-# qtmax = np.rint(np.clip(np.array(qts).max(axis=0)+qtstd*0.5, 1, 255))
-# qtmin = np.rint(np.clip(np.array(qts).min(axis=0)-qtstd*0.5, 1, 255))
-# bound_qt = np.array([random.randint(qtmin[i], qtmax[i]) for i in range(64)]).reshape(8,8)
-# ratio.write_qtable(bound_qt, qtable_name)
+# # scores = np.array((df['rate'],df['acc1']))
+# # scores = np.swapaxes(scores,0,1)
+# # indexs = np.load('pareto.npy')
+# indexs = np.load('pareto1000.npy')
+# # pool = Pool(4)
+# for ind in indexs:
+#     # if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
+#     # if df['rate'][ind] <= 20 and ind not in hist:
+#     # if df['rate'][ind] >= 30 and ind not in hist:
+#     # if df['rate'][ind] <= 25 and ind not in hist:
+#     if df['rate'][ind] > 25 and ind not in hist:
+#         logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
+#         run((ind, logs))
+#         # arg_list.append((ind, logs))
+# # pool.map(run, arg_list)
