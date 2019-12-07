@@ -51,8 +51,7 @@ def to_bmp(in_root, in_dirs, file_list, out_dir):
 def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable):
     for dir_in in dir_list:
         if dir_in in file_list:
-            if not os.path.exists(os.path.join(cmp_dir,dir_in) ):
-                os.makedirs(os.path.join(cmp_dir,dir_in) )
+            create_dir(os.path.join(cmp_dir,dir_in))
             count = 0
             for file_in in file_list[dir_in]:
                 count += 1
@@ -67,8 +66,7 @@ def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable):
 
 def compress_quality(quality, dir_list, file_list, cmp_dir, uncmp_root):
     for dir_in in dir_list:
-        if not os.path.exists(os.path.join(cmp_dir,dir_in) ):
-            os.makedirs(os.path.join(cmp_dir,dir_in) )
+        create_dir(os.path.join(cmp_dir,dir_in))
         for file_in in file_list[dir_in]:
             file_out = os.path.join(cmp_dir,dir_in,file_in.replace('bmp','jpg'))
             execute = "~/libjpeg/cjpeg -outfile "+file_out+" -quality "+quality+" "+os.path.join(uncmp_root,dir_in,file_in)
@@ -120,7 +118,7 @@ def run_standard(args):
     ind,logs = args
     start = time.time()
     
-    cmp_dir = os.path.join(optimize_root, 'standard_qtable_'+str(ind))
+    cmp_dir = os.path.join(optimize_root, 'qtable_'+str(ind))
     create_dir(cmp_dir)
 
     ### compress dataset
@@ -150,7 +148,36 @@ def run_standard(args):
     logs += 'Time: {:.1f}h\n'.format(_elapse/3600)
     # break
     print(logs)
-    
+
+
+def identify_pareto(source="sorted.csv", dest='pareto'):
+    df = pd.read_csv(source)
+    scores=np.array((df['rate'],df['acc1']))
+    scores=np.swapaxes(scores,0,1)
+
+    # Count number of items
+    population_size = scores.shape[0]
+    # Create a NumPy index for scores on the pareto front (zero indexed)
+    population_ids = np.arange(population_size)
+    # Create a starting list of items on the Pareto front
+    # All items start off as being labelled as on the Parteo front
+    pareto_front = np.ones(population_size, dtype=bool)
+    # Loop through each item. This will then be compared with all other items
+    for i in range(population_size):
+        # Loop through all other items
+        for j in range(population_size):
+            # Check if our 'i' pint is dominated by out 'j' point
+            if all(scores[j] >= scores[i]) and any(scores[j] > scores[i]):
+                # j dominates i. Label 'i' point as not on Pareto front
+                pareto_front[i] = 0
+                # Stop further comparisons with 'i' (no more comparisons needed)
+                break
+    # Return ids of scenarios on pareto front
+    np.save(dest,population_ids[pareto_front])
+    return population_ids[pareto_front]
+
+
+
 
 ### convert jpeg images to bmp
 # dir_list = os.listdir('/data/ILSVRC2012/val')
@@ -162,15 +189,24 @@ def run_standard(args):
 # to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
 # raise Exception('to_bmp')
 
-gpu_id = 0
-csv_name = 'csv/crossval_imagenet.csv'
-# csv_name = 'csv/crossval_imagenet_standard.csv'
-optimize_root = '/data/zh272/temp/'
-qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
-# qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
-metrics_file = "csv/sorted.csv"
-# metrics_file = "csv/bayesian5.csv"
-# metrics_file = "csv/standard.csv"
+gpu_id = 1
+suffix = 'bayesian5' # sorted, standard, bayesian5
+subproc,procs = 0,1 # 0,1,2,3
+
+csv_name = 'csv/crossval_imagenet_{}.csv'.format(suffix)
+optimize_root = '/data/zh272/temp/{}/'.format(suffix)
+metrics_file = "csv/{}.csv".format(suffix)
+
+if suffix == 'sorted':
+    qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
+    pareto_file = 'pareto1000'
+elif suffix == 'bayesian5':
+    qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
+    pareto_file = 'pareto_bayesian'
+else:
+    raise Exception('not finished')
+
+
 uncmp_root = '/data/ILSVRC2012/val_bmp'
 
 
@@ -204,25 +240,25 @@ if os.path.isfile(csv_name):
 partition = int(len(dir_list)/20)#20
 arg_list = []
 
-### For standard JPEG table with different quality
-# for ind in range(5,101,5):
-#     logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
-#     run_standard((ind,logs))
+if suffix == 'standard':
+    ### For standard JPEG table with different quality
+    for ind,qua in enumerate(range(5,101,5)):
+        logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(qua, df['rate'][ind], df['acc1'][ind])
+        run_standard((qua,logs))
 
+else:
+    ### For customized JPEG tables
+    if os.path.exists(pareto_file+'.npy'):
+        indexs = np.load(pareto_file+'.npy')
+    else:
+        indexs = identify_pareto(source=metrics_file, dest=pareto_file)
 
-### For customized JPEG tables
-# scores = np.array((df['rate'],df['acc1']))
-# scores = np.swapaxes(scores,0,1)
-# indexs = np.load('pareto.npy')
-indexs = np.load('pareto1000.npy')
-# pool = Pool(4)
-for ind in indexs:
-    if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
-    # if df['rate'][ind] <= 20 and ind not in hist:
-    # if df['rate'][ind] >= 30 and ind not in hist:
-    # if df['rate'][ind] <= 25 and ind not in hist:
-    # if df['rate'][ind] > 25 and ind not in hist:
-        logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
-        run((ind, logs))
-        # arg_list.append((ind, logs))
-# pool.map(run, arg_list)
+    # pool = Pool(4)
+    length = len(indexs)//procs
+    for ind in indexs[subproc*length:min((subproc+1)*length, length)]:
+        # if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
+        if ind not in hist:
+            logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
+            run((ind, logs))
+    #         arg_list.append((ind, logs))
+    # pool.map(run, arg_list)
