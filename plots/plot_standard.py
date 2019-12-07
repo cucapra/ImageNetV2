@@ -53,7 +53,7 @@ plt.legend(loc=0)
 plt.xlabel('rate') #rate
 plt.ylabel(term)
 os.chdir('../plots/')
-plt.savefig('other_part.png')
+plt.savefig('cross_val_'+part+'.png')
 plt.show()
 
 #df = pd.read_csv("libjpeg_random.csv")
