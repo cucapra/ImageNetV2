@@ -81,8 +81,8 @@ pareto1000 = np.load('pareto1000.npy')
 #scores = np.array((df['rate'],df['acc1']))
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
-groups = {  'psnr': { 'index': slice(None) },
-            'psnr_pareto': { 'index': pareto1000 }
+groups = {  'psnr': { 'index': slice(None), 'name': 'Sorted Random Search'},
+            'psnr_pareto': { 'index': pareto1000 , 'name':'Pareto of Sorted Random Search' }
          }
 
 # Create plot
@@ -92,16 +92,20 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #x = np.linspace(min(df['rate']), max(df['rate']), 1000)
 #y = [ np.sum(np.array([a**2,a,1])*coef) for a in x]
 #ax.plot(x,y)
-for k in groups.keys():
+markers = [(i,j,0) for i in range(2,10) for j in range(1, 3)]
+for i, k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=30, label=k)
+    ax.scatter(x, y, s=50, label=groups[k]['name'])
 
 
 #plt.title('CR pareto vs Acc')
-plt.legend(loc=0)
-plt.xlabel('rate') #rate
-plt.ylabel('psnr')
+plt.legend(loc=0, fontsize=12)
+plt.tick_params(axis="x", labelsize=12)
+plt.tick_params(axis="y", labelsize=12)
+plt.xlabel('Compression Rate', fontsize=18) #rate
+plt.ylabel('PSNR', fontsize=18)
+plt.tight_layout()
 os.chdir('../plots/')
 plt.savefig(os.path.basename(__file__).replace('.py','.png'))
 plt.show()

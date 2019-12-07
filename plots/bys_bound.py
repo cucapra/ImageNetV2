@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import glob
+import copy
 import os
 os.chdir('../jpeg_eval/')
 
@@ -41,8 +42,14 @@ def get_data(group, **param):
 #df  = pd.read_csv("ratio.csv")
 #pl = df.plot(kind='scatter',x='Comp Rate',y='Acc', s=30, color ='Blue', label='random jpeg')
 #term = 'rate'#rate
+    if 'MAB' in group:
+        df = pd.read_csv("csv/mab_bounded.csv")
+        return (df['rate'][index], df['acc1'][index])
     if 'sorted' in group:
         df = pd.read_csv("csv/sorted.csv")
+        return (df['rate'][index], df['acc1'][index])
+    if 'bound' in group:
+        df = pd.read_csv('csv/'+group+'.csv')
         return (df['rate'][index], df['acc1'][index])
     if 'bayesian' in group:
         df = pd.read_csv('csv/'+group+'.csv')
@@ -58,14 +65,20 @@ def get_data(group, **param):
         return (df['rate'][index], df['psnr_mean'][index])
 
 rates = np.array(pd.read_csv('csv/sorted.csv')['rate'])
-sorted_index = np.logical_and(rates > 21.33,rates < 22.81)
+sorted_index = np.logical_and(rates > 21,rates < 23)
+sorted_index2 = copy.deepcopy(sorted_index)
+sorted_index2[1000:] = False
 #scores = np.array((df['rate'],df['acc1']))
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
 groups = {  
-            'sorted': { 'index': sorted_index },
-            'bayesian3': { 'index': slice(None) },
-            'bayesian5': { 'index': slice(None) },
+            'sorted': { 'index': sorted_index , 'name': 'Sorted Random Search'},
+            #'sorted1000': { 'index': sorted_index2 },
+            'bayesian3': { 'index': slice(None), 'name': 'Bayesian w/o Local Grid Search' },
+            'bayesian5': { 'index': slice(None), 'name': 'Bayesian w/ Local Grid Search'},
+            'bound': { 'index': slice(None), 'name': 'Bounded Random Search'},
+            'MAB': { 'index': slice(None), 'name':'MAB' },
+
          }
 
 # Create plot
@@ -77,16 +90,21 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #ax.plot(x,y)
 xmax = 0
 xmin = 0
-for k in groups.keys():
+markers = [(i,j,0) for i in range(2,10) for j in range(1, 3)]
+
+for i,k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=30, label=k.replace('_part1', ''))
+    ax.scatter(x, y, s=30, label=groups[k]['name'].replace('_part1', ''))
 
 
 #plt.title('CR pareto vs Acc')
-plt.legend(loc=0)
-plt.xlabel('rate') 
-plt.ylabel('acc')
+plt.legend(loc=0,fontsize=12)
+plt.tick_params(axis="x", labelsize=12)
+plt.tick_params(axis="y", labelsize=12)
+plt.xlabel('Compression Rate', fontsize=18) 
+plt.ylabel('Accuracy',fontsize=18)
+plt.tight_layout()
 os.chdir('../plots/')
 plt.savefig(os.path.basename(__file__).replace('.py','.png'))
 plt.show()
