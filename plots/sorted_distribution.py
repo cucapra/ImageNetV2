@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import glob
+import copy
 import os
 os.chdir('../jpeg_eval/')
 
@@ -41,54 +42,46 @@ def get_data(group, **param):
 #df  = pd.read_csv("ratio.csv")
 #pl = df.plot(kind='scatter',x='Comp Rate',y='Acc', s=30, color ='Blue', label='random jpeg')
 #term = 'rate'#rate
-    if 'random' in group:
-        df=pd.read_csv('csv/random.csv')
+    if 'MAB' in group:
+        df = pd.read_csv("csv/mab_bounded.csv")
         return (df['rate'][index], df['acc1'][index])
     if 'sorted' in group:
         df = pd.read_csv("csv/sorted.csv")
+        return (df['rate'][index], df['acc1'][index])
+    if 'bound' in group:
+        df = pd.read_csv('csv/'+group+'.csv')
+        return (df['rate'][index], df['acc1'][index])
+    if 'bayesian' in group:
+        df = pd.read_csv('csv/'+group+'.csv')
         return (df['rate'][index], df['acc1'][index])
     if 'standard' in group:
         df = pd.read_csv('csv/'+group+'.csv')
         term = df['i'].astype(str).str.isnumeric()
         if param['start'] != None:
             term = df['i'].str.startswith(param['startwith']) 
-        return (df['rate'][term][index], df['acc1'][term][index])
+        res = (df['rate'][term][index], df['acc1'][term][index])
+        return res
     if 'psnr' in group:
         df = pd.read_csv('csv/sorted_psnr.csv')
         return (df['rate'][index], df['psnr_mean'][index])
-#psnr = (df['psnr_mean'],df[term])
-#scores=np.array((df['psnr_mean'],df['acc1']))
-#scores=np.swapaxes(scores,0,1)
-#indexes=identify_pareto(scores)
-#np.save('pareto',indexes)
-#indexes = np.load('pareto.npy')
-#g1 = (df['rate'][indexes],df['acc1'][indexes])
-#g2 = (df['rate'],df['acc1'])
-##g1 = (df['psnr_mean'][indexes],df[term][indexes])
-#np.set_printoptions(threshold=sys.maxsize)
-#df = pd.read_csv("csv/ga_selection_multi.csv")
-#scores=np.array((df['rate'],df['acc1']))
-#scores=np.swapaxes(scores,0,1)
-#indexes=identify_pareto(scores)
-#g3 = (df['rate'][indexes],df['acc1'][indexes]) #g3: pareto of ga
-#df = pd.read_csv("csv/standard_part.csv")
-#g4 = (df['rate'][1:20],df['acc1'][1:20])
-#print(coef)
 
-
-
-markers = ["o" , "," , "o" , "v" , "^" , "<", ">"]#.
-colors = ['r','g','b','y','c', 'm', 'k']#("red","blue",'yellow','green')
-pareto = np.load('pareto.npy')
-#df = pd.read_csv('csv/sorted.csv')
+rates = np.array(pd.read_csv('csv/sorted.csv')['rate'])
+sorted_index = np.logical_and(rates > 22,rates < 22.2)
+sorted_index2 = copy.deepcopy(sorted_index)
+sorted_index2[1000:] = False
 #scores = np.array((df['rate'],df['acc1']))
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
-groups = {  'random': { 'index': slice(None), 'name':'Uniform Random Search' },
-            'sorted': { 'index': slice(None), 'name':'Sorted Random Search' },
-            #'sorted1000': { 'index': slice(0,1000), 'name':'Sorted Random Search 1000' },
-            'sorted_pareto': { 'index': pareto , 'name':'Pareto of Sorted Random Search'},
-            'standard_part1': {'index': slice(2,None), 'start': None, 'name':'Standard' }
+groups = {  
+            'sorted': { 'index': sorted_index },
+            'sorted1000': { 'index': sorted_index2 },
+            'standard_part1':{'index':slice(9,10), 'start':None}
+            #'bayesian3': { 'index': slice(None) },
+            #'bayesian5': { 'index': slice(None) },
+            #'bayesian6': { 'index': slice(None) },
+            #'bound': { 'index': slice(None) },
+            #'MAB': { 'index': slice(None) },
+
          }
 
 # Create plot
@@ -98,23 +91,26 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #x = np.linspace(min(df['rate']), max(df['rate']), 1000)
 #y = [ np.sum(np.array([a**2,a,1])*coef) for a in x]
 #ax.plot(x,y)
-markers = [(i,j,0) for i in range(4,10) for j in range(1, 3)]
-for i,k in enumerate(groups.keys()):
-    x, y = get_data(k, **groups[k])
-    #a = 1 if group=='standard' or 'pareto' else 0.3
-    if k == 'sorted_pareto' or k== 'standard_part1':
-        ax.scatter(x, y, s=45,  marker=markers[i], label=groups[k]['name'].replace('_part1', ''))
-
-    else:
-        ax.scatter(x, y, s=30, marker = 'o',label=groups[k]['name'].replace('_part1', ''))
-
+xmax = 0
+xmin = 0
+for k in groups.keys():
+    _, y = get_data(k, **groups[k])
+    y2 = y.groupby(pd.cut(y, np.arange(y.min(), y.max(), (y.max()-y.min())/7))).count()
+    y2[0]+=1
+    ax.hist(y,bins = 10,edgecolor='k',label = 'Sorted Random Search')
+    break
+    #ax.scatter(x, y, s=30, label=k.replace('_part1', ''))
+k = 'standard_part1'
+_, y = get_data(k, **groups[k])
+y = y.get_value(9)
+ax.axvline(y, linestyle='dashed',color='k', linewidth=1, label = 'Standard')
 
 #plt.title('CR pareto vs Acc')
 plt.legend(loc=0, fontsize=12)
 plt.tick_params(axis="x", labelsize=12)
-plt.tick_params(axis="y", labelsize=12)
-plt.xlabel('Compression Rate', fontsize=18) 
-plt.ylabel('Accuracy', fontsize=18)
+plt.tick_params(axis="y",labelsize=12)
+plt.xlabel('Accuracy',fontsize=18) 
+plt.ylabel('Count', fontsize=18)
 plt.tight_layout()
 os.chdir('../plots/')
 plt.savefig(os.path.basename(__file__).replace('.py','.png'))

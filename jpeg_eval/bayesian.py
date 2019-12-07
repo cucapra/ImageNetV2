@@ -21,10 +21,10 @@ optimize_root = '/mnt/tmpfs/bo_cache/'
 create_dir(optimize_root)
 cmp_dir = os.path.join(optimize_root, 'dataset')
 create_dir(cmp_dir) 
-qtable_dir = os.path.join(optimize_root, 'qtables5')
+qtable_dir = os.path.join(optimize_root, 'qtables6')
 create_dir(qtable_dir)
 
-csv_name = 'csv/bayesian5.csv'
+csv_name = 'csv/bayesian6.csv'
 uncmp_root = '/mnt/tmpfs/matched_frequency_part/'
 uncmp_mean = 150582
 dir_list = os.listdir(uncmp_root)
@@ -89,11 +89,7 @@ qtmin = np.rint(np.clip(np.array(qts).min(axis=0)-qtstd*0.5, 1, 255))
 pbounds = {'q'+str(i).zfill(2): (qtmin[i], qtmax[i]) for i in range(64)}
 print(qtmin.reshape(8,8))
 print(pbounds)
-pmt = 1
-for i in range(len(pbounds)):
-    if qtmin[i] > 23: break
-    pmt *= pbounds['q'+str(i).zfill(2)][1]-pbounds['q'+str(i).zfill(2)][0]
-print(pmt)
+
 btypes = {'q'+str(i).zfill(2): int for i in range(64)}
 
 optimizer = BayesianOptimization(
