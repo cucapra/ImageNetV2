@@ -47,6 +47,7 @@ def eval(dataset,store_root):
         if i < 9742: continue
         print(i)
         cd = cds.all_candidates[img]
+        
         try:
             res=flickr.photos.getSizes(photo_id=cd['id_search_engine'])
             url = ""

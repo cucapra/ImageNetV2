@@ -112,7 +112,8 @@ plt.xlabel('Compression Rate', fontsize=18)
 plt.ylabel('Accuracy',fontsize=18)
 plt.tight_layout()
 os.chdir('../plots/')
-plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png')
+plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png',
+bbox_inches='tight')
 plt.show()
 
 #df = pd.read_csv("libjpeg_random.csv")
