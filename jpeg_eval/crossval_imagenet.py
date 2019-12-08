@@ -10,7 +10,7 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 import evaluate
 # from utils import *
-import utils
+import utils,ratio
 from train2 import parse_args,initialize_model,load_data,create_optimizer,train_model
 import pandas as pd
 from PIL import Image
@@ -264,21 +264,23 @@ def run_train(args):
 # to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
 # raise Exception('to_bmp')
 
-gpu_id = 3
+gpu_id = 0
 retrain = True
-suffix = 'sorted' # sorted, standard, bayesian5
+suffix = 'mab' # sorted,standard,bayesian5,bound,mab
 img_per_cls_train = 50
 img_per_cls = 10
-subproc,procs = 1,2 # 0,1,2,3
+subproc,procs = 0,1 # 0,1,2,3
 uncmp_root = '/data/ILSVRC2012/val_bmp'
 uncmp_root_train = '/data/ILSVRC2012/train_bmp300'
 
 
 
-csv_name = 'csv/crossval_imagenet_{}.csv'.format(suffix+'_retrain' if retrain else '')
+csv_name = 'csv/crossval_imagenet_{}.csv'.format(suffix+'_retrain' if retrain else suffix)
 optimize_root = '/data/zh272/temp/{}/'.format(suffix)
-metrics_file = "csv/{}.csv".format(suffix)
-
+if suffix == 'mab':
+    metrics_file = 'csv/mab_bounded.csv'
+else:
+    metrics_file = "csv/{}.csv".format(suffix)
 
 if suffix == 'sorted':
     qtable_dir = '/data/zh272/flickrImageNetV2/sorted_cache/qtables/'
@@ -286,6 +288,16 @@ if suffix == 'sorted':
 elif suffix == 'bayesian5':
     qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
     pareto_file = 'pareto_bayesian'
+elif suffix == 'bound':
+    qtable_dir = '/data/zh272/flickrImageNetV2/bound_cache/qtables/'
+    pareto_file = 'pareto_bound'
+elif suffix == 'mab':
+    qtable_dir = '/data/zh272/flickrImageNetV2/mab_cache/qtables/'
+    pareto_file = 'pareto_mab'
+    # df = pd.read_csv('csv/mab_bounded_qtable.csv')
+    # for index in range(len(df)):
+    #     qtable = np.array([df['q'+str(i).zfill(2)][index] for i in range(64)]).reshape((8,8))
+    #     ratio.write_qtable(qtable,qname=os.path.join(qtable_dir, 'qtable'+str(index)+'.txt'))
 elif suffix == 'standard':
     pass
 else:
@@ -293,7 +305,7 @@ else:
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
 create_dir(optimize_root)
-if suffix != 'standard':
+if suffix not in ['standard','mab']:
     create_dir(qtable_dir)
 df = pd.read_csv(metrics_file)
 uncmp_mean,uncmp_std = 687300.03404, 1118486.0851240403
@@ -342,7 +354,6 @@ else:
         indexs = np.load(pareto_file+'.npy')
     else:
         indexs = identify_pareto(source=metrics_file, dest=pareto_file)
-
     # pool = Pool(4)
     length = len(indexs)//procs
     for ind in indexs[subproc*length:min((subproc+1)*length, len(indexs))]:

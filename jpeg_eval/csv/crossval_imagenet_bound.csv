@@ -1,0 +1,12 @@
+ind,acc1,acc5,rate,qname
+3,0.7358,0.916,24.324020413475697,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable3.txt
+64,0.7345,0.9165,24.66537892939241,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable64.txt
+81,0.7361,0.9168,24.229321532391104,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable81.txt
+128,0.7356,0.9151,24.378244020450303,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable128.txt
+318,0.7376,0.916,24.288725970864736,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable318.txt
+361,0.7355,0.9167,24.637509733124272,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable361.txt
+362,0.7375,0.9178,24.176488414372653,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable362.txt
+364,0.736,0.9168,24.281082818809104,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable364.txt
+457,0.7364,0.9159,24.283923179422217,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable457.txt
+576,0.7373,0.9154,23.9549324561035,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable576.txt
+589,0.7342,0.9142,24.630287118249385,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable589.txt
