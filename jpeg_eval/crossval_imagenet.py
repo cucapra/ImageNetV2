@@ -265,8 +265,8 @@ def run_train(args):
 # raise Exception('to_bmp')
 
 gpu_id = 0
-retrain = False
-suffix = 'mab' # sorted, standard, bayesian5,bound
+retrain = True
+suffix = 'bound' # sorted,standard,bayesian5,bound,mab
 img_per_cls_train = 50
 img_per_cls = 10
 subproc,procs = 0,1 # 0,1,2,3
@@ -275,7 +275,7 @@ uncmp_root_train = '/data/ILSVRC2012/train_bmp300'
 
 
 
-csv_name = 'csv/crossval_imagenet_{}.csv'.format(suffix+'_retrain' if retrain else '')
+csv_name = 'csv/crossval_imagenet_{}.csv'.format(suffix+'_retrain' if retrain else suffix)
 optimize_root = '/data/zh272/temp/{}/'.format(suffix)
 if suffix == 'mab':
     metrics_file = 'csv/mab_bounded.csv'
