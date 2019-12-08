@@ -264,12 +264,12 @@ def run_train(args):
 # to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
 # raise Exception('to_bmp')
 
-gpu_id = 3
-retrain = True
-suffix = 'sorted' # sorted, standard, bayesian5
+gpu_id = 0
+retrain = False
+suffix = 'bound' # sorted, standard, bayesian5,bound
 img_per_cls_train = 50
 img_per_cls = 10
-subproc,procs = 1,2 # 0,1,2,3
+subproc,procs = 0,1 # 0,1,2,3
 uncmp_root = '/data/ILSVRC2012/val_bmp'
 uncmp_root_train = '/data/ILSVRC2012/train_bmp300'
 
@@ -286,6 +286,12 @@ if suffix == 'sorted':
 elif suffix == 'bayesian5':
     qtable_dir = '/data/zh272/flickrImageNetV2/bo_chace/qtables5/'
     pareto_file = 'pareto_bayesian'
+elif suffix == 'bound':
+    qtable_dir = '/data/zh272/flickrImageNetV2/bound_cache/qtables/'
+    pareto_file = 'pareto_bound'
+elif suffix == 'mab':
+    qtable_dir = '/data/zh272/flickrImageNetV2/mab_cache/qtables/'
+    pareto_file = 'pareto_mab'
 elif suffix == 'standard':
     pass
 else:
@@ -342,7 +348,7 @@ else:
         indexs = np.load(pareto_file+'.npy')
     else:
         indexs = identify_pareto(source=metrics_file, dest=pareto_file)
-
+    raise Exception(len(indexs))
     # pool = Pool(4)
     length = len(indexs)//procs
     for ind in indexs[subproc*length:min((subproc+1)*length, len(indexs))]:
