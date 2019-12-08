@@ -1,0 +1,4 @@
+ind,acc1,acc5,rate,qname
+3,0.7358,0.916,24.324020413475697,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable3.txt
+64,0.7345,0.9165,24.66537892939241,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable64.txt
+7,0.7374,0.9156,24.837823405664604,/data/zh272/flickrImageNetV2/mab_cache/qtables/qtable7.txt
