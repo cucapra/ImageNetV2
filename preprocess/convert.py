@@ -13,27 +13,29 @@ path = '/data/zhijing/flickrImageNetV2/matched_frequency/'
 #path = '/data/zhijing/flickrImageNetV2/topimages/'#topimages,threshold0.
 path = '/data/zhijing/flickrImageNetV2/threshold0.7/'
 #path = '/data/zhijing/flickrImageNetV2/markov_cache/trial3/dataset/'
-write_to = '/data/zhijing/flickrImageNetV2/topimages0.7_224/'
+path='/data/zhijing/cs6787/imagenet/val/'
+#write_to = '/data/zhijing/flickrImageNetV2/topimages0.7_224/'
+write_to = '/data/zhijing/cs6787/imagenet_224/val'
 if not os.path.exists(write_to):
     os.makedirs(write_to)
 
 al=0
-w = 0
-h = 0
+#w = 0
+#h = 0
 for d in os.listdir(path):
     l= len(os.listdir(os.path.join(path,d)))
     al += l
     if l!=10:
         print('wrong at')
         print(d, 'with number of ',l)
-        #if not os.path.exists( os.path.join(write_to,d) ):
-    #    os.makedirs(os.path.join(write_to,d))
+    if not os.path.exists( os.path.join(write_to,d) ):
+        os.makedirs(os.path.join(write_to,d))
     for f in os.listdir(os.path.join(path,d)):
         file_in = os.path.join(path,d,f)
-    #    pic2bmp(file_in, os.path.join(write_to,d,f) )
-        a, b = Image.open(file_in).size
-        w+=a
-        h+=b
+        pic2bmp(file_in, os.path.join(write_to,d,f) )
+        #a, b = Image.open(file_in).size
+        #w+=a
+        #h+=b
 
-print(w/10000,h/10000)
+#print(w/10000,h/10000)
 print(al)
