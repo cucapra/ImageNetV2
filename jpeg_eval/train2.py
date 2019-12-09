@@ -309,6 +309,7 @@ def load_data(args, input_size):
         'train':args.data_dir,#os.path.join(args.data_dir, 'train'),
         'val':args.val_name#os.path.join(args.data_dir, args.val_name) 
     }
+    print(folders)
     # Create training and validation datasets
     image_datasets = {x: datasets.ImageFolder(folders[x], data_transforms[x]) for x in ['train', 'val']}
     # Create training and validation dataloaders
@@ -328,7 +329,7 @@ def create_optimizer(args, model_ft):
             print(name)
                 
     #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.005, momentum=0.9)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.002, momentum=0.9)
     return optimizer_ft
 
    
