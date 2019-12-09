@@ -17,8 +17,6 @@ from PIL import Image
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-
-
 def get_size(start_path):
     total_size = []
     for dirpath, dirnames, filenames in os.walk(start_path):
@@ -32,22 +30,31 @@ def get_size(start_path):
     # return total_size.mean(),total_size.std()
     return total_size
 
-def to_bmp(in_root, in_dirs, file_list, out_dir):
+
+data_t = transforms.Compose([transforms.Resize(256),transforms.CenterCrop(224)])
+def to_bmp(in_root, in_dirs, file_list, out_dir, limit=300):
     for dir_in in in_dirs:
         temp_path = os.path.join(out_dir,dir_in)
         if not os.path.exists(temp_path) and os.path.isdir(os.path.join(in_root,dir_in)):
             os.makedirs(temp_path)
         if dir_in in file_list:
+            count = 0
             for file_in in file_list[dir_in]:
+                count += 1
+                if count>limit:
+                    break
                 out_name = file_in.split('.')[0]+'.bmp'
                 file_out = os.path.join(temp_path,out_name)
                 if not os.path.isfile(file_out):
-                    print(file_in, file_out)
+                    # print(file_in, file_out)
                     try:
-                        Image.open(os.path.join(in_root,dir_in,file_in)).convert('RGB').save(file_out)
+                        data_t(Image.open(
+                            os.path.join(in_root,dir_in,file_in)
+                        )).convert('RGB').save(file_out)
                     except OSError as e:
                         print(e)
                         continue
+            print(temp_path, count)
 
 
 def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable,limit=10):
@@ -134,9 +141,10 @@ def run(args):
             '--batch_size','64',
             '--num_classes','1000',
             '--val_name',cmp_dir,
-            '--num_epochs','20',
+            '--num_epochs','10',
         ]
         acc1,acc5 = run_train(train_args)
+        raise Exception('runrun')
     else:
         ### evaluate model
         logs += 'Evaluating...\n'
@@ -194,7 +202,7 @@ def run_standard(args):
             '--batch_size','64',
             '--num_classes','1000',
             '--val_name',cmp_dir,
-            '--num_epochs','20',
+            '--num_epochs','10',
         ]
         acc1,acc5 = run_train(train_args)
     else:
@@ -255,13 +263,13 @@ def run_train(args):
 
 
 ### convert jpeg images to bmp
-# dir_list = os.listdir('/data/ILSVRC2012/val')
+# dir_list = os.listdir('/data/ILSVRC2012/train_bmp300')
 # file_list = {}
 # for x in dir_list:
-#     temp_dir = os.path.join('/data/ILSVRC2012/val',x)
+#     temp_dir = os.path.join('/data/ILSVRC2012/train_bmp300',x)
 #     if os.path.isdir(temp_dir):
 #         file_list[x] = os.listdir(temp_dir)
-# to_bmp('/data/ILSVRC2012/val', dir_list, file_list, '/data/ILSVRC2012/val_bmp')
+# to_bmp('/data/ILSVRC2012/train_bmp300', dir_list, file_list, '/data/ILSVRC2012/train_bmp300_resize224')
 # raise Exception('to_bmp')
 
 gpu_id = 0
@@ -270,8 +278,8 @@ suffix = 'mab' # sorted,standard,bayesian5,bound,mab
 img_per_cls_train = 50
 img_per_cls = 10
 subproc,procs = 0,1 # 0,1,2,3
-uncmp_root = '/data/ILSVRC2012/val_bmp'
-uncmp_root_train = '/data/ILSVRC2012/train_bmp300'
+uncmp_root = '/data/ILSVRC2012/val_bmp_resize224'
+uncmp_root_train = '/data/ILSVRC2012/train_bmp300_resize224'
 
 
 
@@ -308,12 +316,18 @@ create_dir(optimize_root)
 if suffix not in ['standard','mab']:
     create_dir(qtable_dir)
 df = pd.read_csv(metrics_file)
-uncmp_mean,uncmp_std = 687300.03404, 1118486.0851240403
-uncmp_mean_train,uncmp_std_train = 662408.8940933333, 1233251.0965360408
+# uncmp_mean,uncmp_std = 687300.03404, 1118486.0851240403
+# uncmp_mean_train,uncmp_std_train = 662408.8940933333, 1233251.0965360408
+uncmp_mean,uncmp_std = 150582.0, 0.0
+uncmp_mean_train,uncmp_std_train = 150582.0, 0.0
+
 # uncmp_size = get_size(uncmp_root)
 # uncmp_mean,uncmp_std = uncmp_size.mean(), uncmp_size.std()
-# print(uncmp_mean,uncmp_std)
-# raise Exception('ddd')
+# print('val',uncmp_mean,uncmp_std)
+# uncmp_size_train = get_size(uncmp_root_train)
+# uncmp_mean_train,uncmp_std_train = uncmp_size_train.mean(), uncmp_size_train.std()
+# print('train',uncmp_mean_train,uncmp_std_train)
+# raise Exception('umcmp_size')
 
 dir_list_train = os.listdir(uncmp_root_train)
 file_list_train = {}
@@ -355,6 +369,7 @@ else:
     else:
         indexs = identify_pareto(source=metrics_file, dest=pareto_file)
     # pool = Pool(4)
+    indexs = np.random.choice(indexs,size=5,replace=False)
     length = len(indexs)//procs
     for ind in indexs[subproc*length:min((subproc+1)*length, len(indexs))]:
         # if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
