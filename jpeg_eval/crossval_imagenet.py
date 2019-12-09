@@ -274,7 +274,7 @@ def run_train(args):
 
 gpu_id = 0
 retrain = True
-suffix = 'mab' # sorted,standard,bayesian5,bound,mab
+suffix = 'bound' # sorted,standard,bayesian5,bound,mab
 img_per_cls_train = 50
 img_per_cls = 10
 subproc,procs = 0,1 # 0,1,2,3
