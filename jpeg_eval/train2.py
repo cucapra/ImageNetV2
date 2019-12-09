@@ -312,7 +312,7 @@ def load_data(args, input_size):
     # Create training and validation datasets
     image_datasets = {x: datasets.ImageFolder(folders[x], data_transforms[x]) for x in ['train', 'val']}
     # Create training and validation dataloaders
-    dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=args.batch_size, shuffle=True, num_workers=4) for x in ['train', 'val']}
+    dataloaders_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=args.batch_size, shuffle=True, num_workers=0) for x in ['train', 'val']}
     return image_datasets, dataloaders_dict
 # Detect if we have a GPU available
 
@@ -328,16 +328,13 @@ def create_optimizer(args, model_ft):
             print(name)
                 
     #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.02, momentum=0.9)
     return optimizer_ft
 
    
 
 def run(args):
-
-
     args = parse_args(args)
-
     
     model_ft, input_size = initialize_model(args,use_pretrained=True)
     image_datasets, dataloaders_dict = load_data(args, input_size) 
