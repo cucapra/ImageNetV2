@@ -59,7 +59,6 @@ def get_data(group, **param):
     if 'standard' in group:
         df = pd.read_csv('csv/standard_'+part+'.csv')
         term = df['i'].astype(str).str.isnumeric()
-        print(param)
         if 'contain' in param:
             term = df['i'].str.contains(param['contain'], regex = False)
         if 'start' in param:
@@ -68,20 +67,21 @@ def get_data(group, **param):
     if 'psnr' in group:
         df = pd.read_csv('csv/sorted_psnr.csv')
         return (df['rate'][index], df['psnr_mean'][index])
-
-rates = np.array(pd.read_csv('csv/sorted.csv')['rate'])
-sorted_index = np.logical_and(rates > 21,rates < 23)
+df = pd.read_csv('csv/standard_'+part+'.csv')
+term = df['i'].astype(str).str.startswith('qtable')
+rates = np.array(df['rate'][term])
+sorted_index = np.logical_and(rates > 21,rates < 23.5)
 sorted_index2 = copy.deepcopy(sorted_index)
 sorted_index2[1000:] = False
 #scores = np.array((df['rate'],df['acc1']))
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
 groups = {  
-            'standard': { 'index': slice(2,None), 'name': 'Standard'},
-            'standard_sr': {'index':slice(None), 'start':'qtable', 'name':'Sorted Random Search'},
+            'standard': { 'index': slice(8,11), 'name': 'Standard'},
+            'standard_sr': {'index':sorted_index, 'start':'qtable', 'name':'Sorted Random Search'},
             'standard_mab': {'index': slice(None), 'contain':'mab_cache','name':'MAB'},
             'standard_bys': { 'index': slice(None), 'contain':'bo_cache','name':'Bayesian'},
-            #'standard_bound': { 'index': slice(None), 'contain':'bound_cache','name':'Bound'},
+            'standard_bd': { 'index': slice(None), 'contain':'bound_cache','name':'Bound'},
             }
 
 # Create plot
@@ -94,22 +94,26 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 xmax = 0
 xmin = 0
 markers = [(i,j,0) for i in range(2,10) for j in range(1, 3)]
-
+markers = ['o','v','^','8','s']
 for i,k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
-    #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=50, edgecolors='k', marker = markers[i],label=groups[k]['name'])
-
-
+    size = 100 if k=='standard' else 50
+    a = 1 if k=='standard' else 0.9
+    ax.scatter(x, y, s=size, edgecolors='k',alpha = a, marker = markers[i],label=groups[k]['name'])
+    
+xleft, xright = ax.get_xlim()
+ybottom, ytop = ax.get_ylim()
+ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*0.5)
 #plt.title('CR pareto vs Acc')
-plt.legend(loc=0,fontsize=12)
+plt.legend(loc=0,fontsize=12,handlelength=0.8)
 plt.tick_params(axis="x", labelsize=12)
 plt.tick_params(axis="y", labelsize=12)
 plt.xlabel('Compression Rate', fontsize=18) 
 plt.ylabel('Accuracy',fontsize=18)
 plt.tight_layout()
 os.chdir('../plots/')
-plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png')
+plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png',
+bbox_inches='tight')
 plt.show()
 
 #df = pd.read_csv("libjpeg_random.csv")

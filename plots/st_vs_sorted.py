@@ -75,9 +75,6 @@ def get_data(group, **param):
 #g4 = (df['rate'][1:20],df['acc1'][1:20])
 #print(coef)
 
-
-
-markers = ["o" , "," , "o" , "v" , "^" , "<", ">"]#.
 colors = ['r','g','b','y','c', 'm', 'k']#("red","blue",'yellow','green')
 pareto = np.load('pareto.npy')
 #df = pd.read_csv('csv/sorted.csv')
@@ -99,11 +96,12 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #y = [ np.sum(np.array([a**2,a,1])*coef) for a in x]
 #ax.plot(x,y)
 markers = [(i,j,0) for i in range(4,10) for j in range(1, 3)]
+markers = ['o','v','^','8','s'] 
 for i,k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    if k == 'sorted_pareto' or k== 'standard_part1':
-        ax.scatter(x, y, s=45,  marker=markers[i], label=groups[k]['name'].replace('_part1', ''))
+    if k== 'standard_part1':
+        ax.scatter(x, y, s=45,  marker=markers[i],edgecolors='k', label=groups[k]['name'].replace('_part1', ''))
 
     else:
         ax.scatter(x, y, s=30, marker = 'o',label=groups[k]['name'].replace('_part1', ''))

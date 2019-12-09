@@ -1,0 +1,7 @@
+ind,acc1,acc5,rate,qname
+3,0.0947,0.2822,24.324020413475697,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable3.txt
+64,0.0944,0.2653,24.66537892939241,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable64.txt
+81,0.0949,0.2757,24.229321532391104,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable81.txt
+128,0.0971,0.2758,24.378244020450303,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable128.txt
+318,0.0914,0.2659,24.288725970864736,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable318.txt
+361,0.0908,0.2602,24.637509733124272,/data/zh272/flickrImageNetV2/bound_cache/qtables/qtable361.txt

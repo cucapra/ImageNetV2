@@ -14,7 +14,7 @@ n = 500
 time = datetime.timedelta(0)
 for i in range(n):
     t1 = datetime.datetime.now()
-    ratio.sorted_qtable_generate('../tmp')
+    ratio.random_qtable_generate('../tmp')
     t2 = datetime.datetime.now()
     time += t2-t1
 print('sorted profiling: ',time/n)
