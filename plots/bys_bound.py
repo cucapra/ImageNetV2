@@ -74,9 +74,9 @@ sorted_index2[1000:] = False
 groups = {  
             'sorted': { 'index': sorted_index , 'name': 'Sorted Random Search'},
             #'sorted1000': { 'index': sorted_index2 },
+            'bound': { 'index': slice(None), 'name': 'Bounded Random Search'},
             'bayesian3': { 'index': slice(None), 'name': 'Bayesian w/o Local Grid Search' },
             'bayesian5': { 'index': slice(None), 'name': 'Bayesian w/ Local Grid Search'},
-            'bound': { 'index': slice(None), 'name': 'Bounded Random Search'},
             'MAB': { 'index': slice(None), 'name':'MAB' },
 
          }
@@ -94,8 +94,8 @@ markers = [(i,j,0) for i in range(2,10) for j in range(1, 3)]
 
 for i,k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
-    #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=30, label=groups[k]['name'].replace('_part1', ''))
+    a = 1 if 'standard' in k else 0.8
+    ax.scatter(x, y, s=30, alpha=a, label=groups[k]['name'].replace('_part1', ''))
 
 
 #plt.title('CR pareto vs Acc')

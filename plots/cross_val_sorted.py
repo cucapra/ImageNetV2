@@ -6,8 +6,8 @@ import glob
 import copy
 import os
 os.chdir('../jpeg_eval/')
-sys.path.insert(0,'../jpeg_eval/')
-from utils import identify_pareto
+part = sys.argv[1]
+
 
 def identify_pareto(scores):
     # Count number of items
@@ -57,10 +57,13 @@ def get_data(group, **param):
         df = pd.read_csv('csv/'+group+'.csv')
         return (df['rate'][index], df['acc1'][index])
     if 'standard' in group:
-        df = pd.read_csv('csv/'+group+'.csv')
+        df = pd.read_csv('csv/standard_'+part+'.csv')
         term = df['i'].astype(str).str.isnumeric()
-        if param['start'] != None:
-            term = df['i'].str.startswith(param['startwith']) 
+        print(param)
+        if 'contain' in param:
+            term = df['i'].str.contains(param['contain'], regex = False)
+        if 'start' in param:
+            term = df['i'].str.startswith(param['start'])
         return (df['rate'][term][index], df['acc1'][term][index])
     if 'psnr' in group:
         df = pd.read_csv('csv/sorted_psnr.csv')
@@ -74,14 +77,12 @@ sorted_index2[1000:] = False
 #scores = np.swapaxes(scores,0,1)
 #pareto = identify_pareto(scores)
 groups = {  
-            'standard_part1':{'index':slice(8,11),'start':None, 'name':'Standard'}, 
-            'sorted': { 'index': sorted_index , 'name': 'Sorted Random Search'},
-            #'sorted1000': { 'index': sorted_index2 },
-            'MAB': { 'index': slice(None), 'name':'MAB' },
-            'bayesian3': { 'index': slice(None), 'name': 'Bayesian w/o Local Grid Search' },
-            'bayesian5': { 'index': slice(None), 'name': 'Bayesian w/ Local Grid Search'},
-            'bound': { 'index': slice(None), 'name': 'Bounded Random Search'},
-         }
+            'standard': { 'index': slice(2,None), 'name': 'Standard'},
+            'standard_sr': {'index':slice(None), 'start':'qtable', 'name':'Sorted Random Search'},
+            #'standard_mab': {'index': slice(None), 'contain':'mab_cache','name':'MAB'},
+            #'standard_bys': { 'index': slice(None), 'contain':'bo_cache','name':'Bayesian'},
+            #'standard_bd': { 'index': slice(None), 'contain':'bound_cache','name':'Bound'},
+            }
 
 # Create plot
 fig = plt.figure()
@@ -92,32 +93,26 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #ax.plot(x,y)
 xmax = 0
 xmin = 0
-markers = [(i,j,0) for i in range(2,10) for j in range(1, 3)]
-markers = ['o','v','^','D','8','s']
-for i, k in enumerate(groups.keys()):
+markers = [(i,j,0) for i in range(5,10) for j in range(1, 3)]
+
+for i,k in enumerate(groups.keys()):
     x, y = get_data(k, **groups[k])
-    x = np.array(x)
-    y = np.array(y)
-    print(len(x))
-    scores = np.array((x,y))
-    scores = np.swapaxes(scores,0,1)
-    pareto = identify_pareto(scores)
-    print(pareto)
-    size = 100 if 'standard' in k else 50
-    a = 1 if k == 'standard' else 0.9
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x[pareto], y[pareto], s=size, alpha=a, edgecolors='k',marker = markers[i], label=groups[k]['name'].replace('_part1', ''))
-
-
+    ax.scatter(x, y, s=30,label=groups[k]['name'])
+    
+xleft, xright = ax.get_xlim()
+ybottom, ytop = ax.get_ylim()
+ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*0.5)
 #plt.title('CR pareto vs Acc')
-plt.legend(loc=3, fontsize=12)
+plt.legend(loc=0,fontsize=12)
 plt.tick_params(axis="x", labelsize=12)
 plt.tick_params(axis="y", labelsize=12)
-plt.xlabel('Compression Rate', fontsize=18) 
+plt.xlabel('', fontsize=18) 
 plt.ylabel('Accuracy',fontsize=18)
 plt.tight_layout()
 os.chdir('../plots/')
-plt.savefig(os.path.basename(__file__).replace('.py','.png'))
+plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png',
+bbox_inches='tight')
 plt.show()
 
 #df = pd.read_csv("libjpeg_random.csv")

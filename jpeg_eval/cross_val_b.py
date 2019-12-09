@@ -70,7 +70,6 @@ def run():
 #        print(row)
 #        store_csv_check(row, csv_name)
 #
-
     cmp_dir = os.path.join(optimize_root,'bo_cache')
     create_dir(cmp_dir)
     qtable_root = '/data/zhijing/flickrImageNetV2/bo_cache/qtables5'
@@ -80,6 +79,47 @@ def run():
     indexes = identify_pareto(scores)
     np.save('bayesian5.npy', indexes)
     print(np.load('bayesian5.npy'))
+    for i in indexes:
+        qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
+        #print(qname)
+        if not os.path.exists(cmp_dir):
+            os.makedirs(cmp_dir)
+        #if i == 0:
+        #    shutil.copyfile('qtables/qtable.txt',tmp_qtable)
+
+        ts = []
+        partition = int(len(dir_list)/20)
+        for j,k in enumerate(range(0,len(dir_list),partition)):
+            ts.append( threading.Thread(target=compress,args=(dir_list[k:k+partition],file_list,cmp_dir,uncmp_root, qname))) 
+            ts[j].start()
+        for t in ts:
+            t.join()
+        #mpsnr = get_psnr(dir_list,file_list,cmp_dir,uncmp_root)
+        #print('mpsnr',mpsnr)
+        cmp_mean,cmp_std = get_size(cmp_dir)
+        print(cmp_mean,cmp_std)
+        r = uncmp_mean/cmp_mean
+        
+        sys.argv = ['skip','--dataset']
+        acc1,acc5 = eval.run(sys.argv.append(cmp_dir) )
+        fitness = diff_fit(acc1, r)
+        row = [qname,acc1,acc5,r,fitness,part]
+        print(row)
+        store_csv_check(row, csv_name)
+
+
+
+
+
+    cmp_dir = os.path.join(optimize_root,'bound_cache')
+    create_dir(cmp_dir)
+    qtable_root = '/data/zhijing/flickrImageNetV2/bound_cache/qtables'
+    df = pd.read_csv('csv/bound.csv')
+    scores = np.array((df['rate'], df['acc1']))
+    scores = np.swapaxes(scores, 0, 1)
+    indexes = identify_pareto(scores)
+    np.save('bound.npy', indexes)
+    print(np.load('bound.npy'))
     for i in indexes:
         qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
         #print(qname)
