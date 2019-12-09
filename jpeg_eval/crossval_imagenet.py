@@ -265,7 +265,11 @@ def run_train(args):
     # Train and evaluate
     model_ft, hist = train_model( args=args, model=model_ft, dataloaders=dataloaders_dict, criterion=criterion, optimizer=optimizer_ft, is_inception=(args.model_name=="inception") )
     #torch.save(model_ft.state_dict(), os.path.join(args.dir,"verification.final"))
-    return hist[-1]
+    best_acc = (0,0)
+    for acc1,acc5 in hist:
+        if acc1>best_acc[0]:
+            best_acc = (acc1,acc5)
+    return best_acc
 
 
 # ### convert jpeg images to bmp
