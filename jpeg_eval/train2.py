@@ -329,7 +329,8 @@ def create_optimizer(args, model_ft):
             print(name)
                 
     #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
+    # optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.0002, momentum=0.9)
     return optimizer_ft
 
    

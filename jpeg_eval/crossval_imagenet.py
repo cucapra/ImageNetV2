@@ -282,9 +282,9 @@ def run_train(args):
 # to_bmp('/data/ILSVRC2012/train_bmp300', dir_list, file_list, '/data/ILSVRC2012/train_bmp300_resize224')
 # raise Exception('to_bmp')
 
-gpu_id = 0
+gpu_id = 3
 retrain = True
-suffix = 'standard' # standard,sorted,bayesian5,bound,mab
+suffix = 'mab' # standard,sorted,bayesian5,bound,mab
 img_per_cls_train = 100
 img_per_cls = 10
 subproc,procs = 0,1 # 0,1,2,3
