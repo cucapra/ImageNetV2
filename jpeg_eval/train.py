@@ -61,14 +61,13 @@ def parse_args(args):
         Integer. Default:25')
     
     parser.add_argument('--val_name', type=str,\
-        default='val',\
+        default='/data/zhijing/flickrImageNetV2/matched_frequency_train/val/',\
         help='Directory for validation dataset. \
         String. Default:"val" ') 
     parser.add_argument('--feature_extract',action = 'store_true')
     args,unparsed = parser.parse_known_args()
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     args.dir = os.path.dirname(__file__)
-    print(args)
     return args
 #####################################################################~~~~~~~~~~~~~~~~~~~~
 ## training and validation.
@@ -150,7 +149,7 @@ def train_model(args, model, dataloaders, criterion, optimizer, is_inception=Fal
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    return model, val_acc_history
+    return model, val_acc_history, best_acc
 
 
 ######################################################################
@@ -267,8 +266,8 @@ def load_data(args, input_size):
     }
     print("Initializing Datasets and Dataloaders...")
     folders = {
-        'train':os.path.join(args.data_dir, 'train'),
-        'val':os.path.join(args.data_dir, args.val_name) 
+        'train':args.data_dir,#os.path.join(args.data_dir, 'train'),
+        'val':args.val_name#os.path.join(args.data_dir, args.val_name) 
     }
     # Create training and validation datasets
     image_datasets = {x: datasets.ImageFolder(folders[x], data_transforms[x]) for x in ['train', 'val']}
@@ -288,8 +287,8 @@ def create_optimizer(args, model_ft):
             params_to_learn.append(param)
             print(name)
                 
-    optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    #optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
+    #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.001, momentum=0.9)
     return optimizer_ft
 
    
@@ -306,9 +305,9 @@ def run(args):
     optimizer_ft = create_optimizer(args, model_ft)
     criterion = nn.CrossEntropyLoss()
     # Train and evaluate
-    model_ft, hist = train_model( args=args, model=model_ft, dataloaders=dataloaders_dict, criterion=criterion, optimizer=optimizer_ft, is_inception=(args.model_name=="inception") )
+    model_ft, hist, best_acc = train_model( args=args, model=model_ft, dataloaders=dataloaders_dict, criterion=criterion, optimizer=optimizer_ft, is_inception=(args.model_name=="inception") )
     #torch.save(model_ft.state_dict(), os.path.join(args.dir,"verification.final"))
     #return hist[0].cpu().numpy()
-
+    return best_acc
 if __name__=='__main__':
     sys.exit(run(sys.argv[1:]))
