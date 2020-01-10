@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import train
 
-method = 'sorted'
-cache_name = 'sorted_cache'
+method = 'bound'
+cache_name = 'bound_cache'
 #part = "standard30"
 #uncmp_root = '/data/zhijing/imagenet300/uncmp/'
 csv_name = 'csv/retrain_val_v2.csv'
@@ -36,7 +36,7 @@ for rate, index in ri[:2]:
     create_dir(train_dir)
     ts = []
     partition = int(len(dir_list)/32)
-    quality = str(30)
+    
     for j,k in enumerate(range(0,len(dir_list),partition)):
         ts.append( threading.Thread(target=compress,args=(dir_list[k:k+partition],file_list,train_dir,uncmp_root,qname)) ) 
         ts[j].start()
@@ -53,7 +53,6 @@ for rate, index in ri[:2]:
     create_dir(val_dir)
     ts = []
     partition = int(len(dir_list)/32)
-    quality = str(30)
     for j,k in enumerate(range(0,len(dir_list),partition)):
         ts.append( threading.Thread(target=compress,args=(dir_list[k:k+partition],file_list,val_dir,uncmp_root,qname)) ) 
         ts[j].start()
@@ -61,15 +60,16 @@ for rate, index in ri[:2]:
         t.join()
 
 
-cmp_mean, cmp_std = get_size(val_dir)
-r = uncmp_mean/cmp_mean
+    cmp_mean, cmp_std = get_size(val_dir)
+    r = uncmp_mean/cmp_mean
 
-sys.argv = ['skip', '-d', train_dir, '--val_name', val_dir, '--feature_extract', '-m', 'resnet', '-ep', '10', '-c', '1000']
-acc1 = train.run(sys.argv)
-fitness = diff_fit(acc1, r)
-row=[quality, acc1, r, fitness]
-print(row)
-store_csv_check(row,csv_name)
+    #sys.argv = ['skip', '-d', train_dir, '--val_name', val_dir, '--feature_extract', '-m', 'resnet', '-ep', '10', '-c', '1000']
+    #acc1 = train.run(sys.argv)
+    #fitness = diff_fit(acc1, r)
+    #row=[qname, acc1, r, fitness]
+    row = [qname, acc1]
+    print(row)
+    store_csv_check(row,csv_name)
 #cmp_dir=uncmp_root
 
 #cmp_mean,cmp_std = get_size(cmp_dir)

@@ -39,7 +39,7 @@ def run():
     #res = np.array(list(set(indexes[indexes<=842])^set(wrong[wrong<=842])))
     #indexes = sorted(np.hstack((res,indexes[indexes > 842])))
     
-    for i in indexes:
+    for i in range(0):#indexes:
         qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
         print(qname)
 
@@ -65,10 +65,10 @@ def run():
 
     
 
-    cmp_dir = os.path.join(optimize_root,'quality'+str(i))
     if not os.path.exists(cmp_dir):
         os.makedirs(cmp_dir)
-    for i in range(5,101,5):
+    for i in range(0):#:5,101,5):
+        cmp_dir = os.path.join(optimize_root,'quality'+str(i))
 
         ts = []
         partition = int(len(dir_list)/20)
@@ -87,12 +87,12 @@ def run():
         row = [i,acc1,acc5,r,fitness,part]
         print(row)
         store_csv_check(row, csv_name)
-#    cmp_dir = os.path.join(optimize_root,'mab_cache')
-#    create_dir(cmp_dir)
-#    mab_root = '/data/zhijing/flickrImageNetV2/mab_cache/'
-#    create_dir(mab_root)
-#    qtable_root = os.path.join(mab_root,'qtables')
-#    create_dir(qtable_root)
+    cmp_dir = os.path.join(optimize_root,'mab_cache')
+    create_dir(cmp_dir)
+    mab_root = '/data/zhijing/flickrImageNetV2/mab_cache/'
+    create_dir(mab_root)
+    qtable_root = os.path.join(mab_root,'qtables')
+    create_dir(qtable_root)
 #    
 #
 #    df = pd.read_csv('csv/mab_bounded.csv')
@@ -102,13 +102,13 @@ def run():
 #    np.save('mab.npy', indexes)
 #    print(np.load('mab.npy'))
     indexes = np.load('mab.npy')
-    df = pd.read_csv('csv/mab_bounded_qtable.csv')
-    for index in range(indexes):
-        qtable = np.array([df['q'+str(i).zfill(2)][index] for i in range(64)])
-        qtable = qtable.reshape((8,8))
-        write_qtable(qtable,qname=os.path.join(qtable_root, 'qtable'+str(index)+'.txt'))
+#    df = pd.read_csv('csv/mab_bounded_qtable.csv')
+#    for index in indexes:
+#        qtable = np.array([df['q'+str(i).zfill(2)][index] for i in range(64)])
+#        qtable = qtable.reshape((8,8))
+#        write_qtable(qtable,qname=os.path.join(qtable_root, 'qtable'+str(index)+'.txt'))
     
-    for i in indexes:
+    for i in range(0):#indexes:
         qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
         ts = []
         partition = int(len(dir_list)/20)
@@ -138,7 +138,7 @@ def run():
    # scores = np.swapaxes(scores, 0, 1)
    # indexes = identify_pareto(scores)
    # np.save('bayesian5.npy', indexes)
-    indexs = np.load('bayesian5.npy')
+    indexes = np.load('bayesian5.npy')
     for i in indexes:
         qname = os.path.join(qtable_root,'qtable'+str(i)+'.txt')
         #print(qname)

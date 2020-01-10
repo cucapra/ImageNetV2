@@ -1,0 +1,11 @@
+i,acc1,acc5,rate,cmp_mean,cmp_std
+50,"tensor(0.4724, device='cuda:0', dtype=torch.float64)",22.093566021749886,"tensor(-0.1025, device='cuda:0', dtype=torch.float64)"
+30,"tensor(0.3714, device='cuda:0', dtype=torch.float64)",22.251162370624908,"tensor(-0.2028, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable2407.txt,"tensor(0.4750, device='cuda:0', dtype=torch.float64)",22.11105853355851,"tensor(-0.0999, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/sorted_cache/qtables/qtable3697.txt,"tensor(0.4790, device='cuda:0', dtype=torch.float64)",22.251162370624908,"tensor(-0.0952, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/bound_cache/qtables/qtable364.txt,"tensor(0.4772, device='cuda:0', dtype=torch.float64)",22.019319363773246,"tensor(-0.0981, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/bound_cache/qtables/qtable589.txt,"tensor(0.4764, device='cuda:0', dtype=torch.float64)",22.17297316272455,"tensor(-0.0982, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/bo_cache/qtables5/qtable347.txt,"tensor(0.4774, device='cuda:0', dtype=torch.float64)",22.109235970277172,"tensor(-0.0975, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/mab_cache/qtables/qtable203.txt,"tensor(0.4728, device='cuda:0', dtype=torch.float64)",22.317753758145397,"tensor(-0.1011, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/bo_cache/qtables5/qtable132.txt,"tensor(0.4794, device='cuda:0', dtype=torch.float64)",22.307852873234918,"tensor(-0.0945, device='cuda:0', dtype=torch.float64)"
+/data/zhijing/flickrImageNetV2/mab_cache/qtables/qtable188.txt,"tensor(0.4774, device='cuda:0', dtype=torch.float64)",22.20620772205382,"tensor(-0.0970, device='cuda:0', dtype=torch.float64)"

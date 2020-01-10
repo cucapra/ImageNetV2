@@ -6,8 +6,6 @@ import glob
 import copy
 import os
 os.chdir('../jpeg_eval/')
-part = sys.argv[1]
-
 
 def identify_pareto(scores):
     # Count number of items
@@ -44,9 +42,12 @@ def get_data(group, **param):
 #df  = pd.read_csv("ratio.csv")
 #pl = df.plot(kind='scatter',x='Comp Rate',y='Acc', s=30, color ='Blue', label='random jpeg')
 #term = 'rate'#rate
-    if 'crossval' in group:
-        df = pd.read_csv("csv/"+group+".csv")
-        return (df['rate'][index], df['acc1'][index])
+    if 'stats' in group:
+        df = pd.read_csv("csv/stats.csv")
+        term1 = df['i'].str.contains(param['contains1'])
+        term2 = df['i'].str.contains(param['contains2'])
+        res = (df['rate'][term1][term2][index], df['acc1'][term1][term2][index])
+        return res
     if 'MAB' in group:
         df = pd.read_csv("csv/mab_bounded.csv")
         return (df['rate'][index], df['acc1'][index])
@@ -60,33 +61,22 @@ def get_data(group, **param):
         df = pd.read_csv('csv/'+group+'.csv')
         return (df['rate'][index], df['acc1'][index])
     if 'standard' in group:
-        df = pd.read_csv('csv/standard_'+part+'.csv')
+        df = pd.read_csv('csv/'+group+'.csv')
         term = df['i'].astype(str).str.isnumeric()
-        print(param)
-        if 'contain' in param:
-            term = df['i'].str.contains(param['contain'], regex = False)
-        if 'start' in param:
-            term = df['i'].str.startswith(param['start'])
-        return (df['rate'][term][index], df['acc1'][term][index])
+        if param['start'] != None:
+            term = df['i'].str.startswith(param['startwith']) 
+        res = (df['rate'][term][index], df['acc1'][term][index])
+        return res
     if 'psnr' in group:
         df = pd.read_csv('csv/sorted_psnr.csv')
         return (df['rate'][index], df['psnr_mean'][index])
 
-rates = np.array(pd.read_csv('csv/sorted.csv')['rate'])
-sorted_index = np.logical_and(rates > 21,rates < 23)
-sorted_index2 = copy.deepcopy(sorted_index)
-sorted_index2[1000:] = False
-#scores = np.array((df['rate'],df['acc1']))
-#scores = np.swapaxes(scores,0,1)
-#pareto = identify_pareto(scores)
+cato = '/'
 groups = {  
-            'standard': { 'index': slice(2,None), 'name': 'Standard'},
-            'standard_sr': {'index':slice(None), 'start':'qtable', 'name':'Sorted Random Search'},
-            #'standard_mab': {'index': slice(None), 'contain':'mab_cache','name':'MAB'},
-            #'standard_bys': { 'index': slice(None), 'contain':'bo_cache','name':'Bayesian'},
-            #'standard_bd': { 'index': slice(None), 'contain':'bound_cache','name':'Bound'},
-            }
+            'stats_sort':{'index':slice(None), 'contains1': 'sorted', 'contains2': cato},
+            'stats_standard':{'index':slice(None), 'contains1': 'quality', 'contains2':cato},
 
+         }
 # Create plot
 fig = plt.figure()
 ax = fig.add_subplot(111)#axisbg="1.0")
@@ -96,38 +86,18 @@ ax = fig.add_subplot(111)#axisbg="1.0")
 #ax.plot(x,y)
 xmax = 0
 xmin = 0
-markers = [(i,j,0) for i in range(5,10) for j in range(1, 3)]
-
-for i,k in enumerate(groups.keys()):
+for k in groups.keys():
     x, y = get_data(k, **groups[k])
     #a = 1 if group=='standard' or 'pareto' else 0.3
-    ax.scatter(x, y, s=30,label=groups[k]['name'])
-    
-xleft, xright = ax.get_xlim()
-ybottom, ytop = ax.get_ylim()
-ax.set_aspect(abs((xright-xleft)/(ybottom-ytop))*0.5)
+    ax.scatter(x, y, s=30, label=k)
+
+
 #plt.title('CR pareto vs Acc')
-plt.legend(loc=0,fontsize=12)
-plt.tick_params(axis="x", labelsize=12)
-plt.tick_params(axis="y", labelsize=12)
-plt.xlabel('Compression Rate', fontsize=18) 
-plt.ylabel('Accuracy',fontsize=18)
-plt.tight_layout()
+plt.legend(loc=0)
+plt.xlabel('rate') 
+plt.ylabel('acc')
 os.chdir('../plots/')
-plt.savefig(os.path.basename(__file__).replace('.py','_')+part+'.png',
-bbox_inches='tight')
+plt.savefig(os.path.basename(__file__).replace('.py','.png'))
 plt.show()
 
-#df = pd.read_csv("libjpeg_random.csv")
-#pl = df.plot.scatter(x='Comp Rate', y='Acc', s=30, color='Blue', label='random jpeg',ax=pl);
-#df = pd.read_csv("libjpeg_perturbed.csv")
-#pl = df.plot.scatter(x='Comp Rate', y='Acc', s=30, color='Yellow', label='perturbed jpeg',ax=pl);
 
-
-#print(df[1:])
-
-#ax.scatter(x=df['rate'][1:], y=df['acc1'][1:], s=45, color='Green', label='standard jpeg')
-
-
-#fig = pl.get_figure()
-#fig.save
