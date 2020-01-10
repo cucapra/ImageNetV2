@@ -13,9 +13,11 @@ path = '/data/zhijing/flickrImageNetV2/matched_frequency/'
 #path = '/data/zhijing/flickrImageNetV2/topimages/'#topimages,threshold0.
 path = '/data/zhijing/flickrImageNetV2/threshold0.7/'
 #path = '/data/zhijing/flickrImageNetV2/markov_cache/trial3/dataset/'
-path='/data/zhijing/cs6787/imagenet/val/'
+#path='/data/zhijing/imagenet300/uncmp'
 #write_to = '/data/zhijing/flickrImageNetV2/topimages0.7_224/'
-write_to = '/data/zhijing/cs6787/imagenet_224/val'
+#write_to = '/data/zhijing/imagenet300/uncmp_224/'
+path = '/data/zhijing/cs6787/imagenet/val_all/'
+write_to = '/data/zhijing/cs6787/imagenet_224/val_all'
 if not os.path.exists(write_to):
     os.makedirs(write_to)
 
@@ -25,7 +27,7 @@ al=0
 for d in os.listdir(path):
     l= len(os.listdir(os.path.join(path,d)))
     al += l
-    if l!=10:
+    if l!=50:
         print('wrong at')
         print(d, 'with number of ',l)
     if not os.path.exists( os.path.join(write_to,d) ):

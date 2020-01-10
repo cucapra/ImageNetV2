@@ -19,7 +19,7 @@ create_dir(train_dir)
 
 ts = []
 partition = int(len(dir_list)/32)
-for j,k in enumerate(range(0,len(dir_list),partition)):
+for j,k in enumerate(range(0)):#,len(dir_list),partition)):
     ts.append( threading.Thread(target=compress_quality, args=(quality, dir_list[k:k+partition], file_list, train_dir, uncmp_root)) )
     ts[j].start()
 for t in ts:
@@ -35,7 +35,7 @@ create_dir(val_dir)
 
 ts = []
 partition = int(len(dir_list)/32)
-for j,k in enumerate(range(0,len(dir_list),partition)):
+for j,k in enumerate(range(0)): #,len(dir_list),partition)):
     ts.append( threading.Thread(target=compress_quality, args=(quality, dir_list[k:k+partition], file_list, val_dir, uncmp_root)) )
     ts[j].start()
 for t in ts:

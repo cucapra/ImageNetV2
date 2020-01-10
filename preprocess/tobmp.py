@@ -22,7 +22,7 @@ def to_bmp(in_root, in_dirs, file_list, out_dir):
                         print(e)
                         continue
                 cnt += 1
-                if cnt == 10: break
+                #if cnt == 10: break
 # convert jpeg images to bmp
 dir_list = os.listdir('/data/datasets/ILSVRC2012/val')
 file_list = {}
@@ -30,5 +30,5 @@ for x in dir_list:
     temp_dir = os.path.join('/data/datasets/ILSVRC2012/val',x)
     if os.path.isdir(temp_dir):
         file_list[x] = os.listdir(temp_dir)
-to_bmp('/data/datasets/ILSVRC2012/val', dir_list, file_list, '/data/zhijing/cs6787')
+to_bmp('/data/datasets/ILSVRC2012/val', dir_list, file_list, '/data/zhijing/cs6787/imagenet/val_all/')
 
