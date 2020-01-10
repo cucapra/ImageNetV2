@@ -101,7 +101,7 @@ def train_model(args, model, dataloaders, criterion, optimizer, is_inception=Fal
             # Iterate over data.
             # for idx, (inputs, labels) in enumerate(dataloaders[phase]):
             for inputs, labels in dataloaders[phase]:
-                if phase=='train' and num_images>=50000:
+                if phase=='train' and num_images>=100000:
                     break
                 if phase=='val' and num_images>=10000:
                     break
@@ -309,6 +309,7 @@ def load_data(args, input_size):
         'train':args.data_dir,#os.path.join(args.data_dir, 'train'),
         'val':args.val_name#os.path.join(args.data_dir, args.val_name) 
     }
+    print(folders)
     # Create training and validation datasets
     image_datasets = {x: datasets.ImageFolder(folders[x], data_transforms[x]) for x in ['train', 'val']}
     # Create training and validation dataloaders
@@ -328,7 +329,8 @@ def create_optimizer(args, model_ft):
             print(name)
                 
     #optimizer_ft = optim.Adam(params_to_learn, lr=0.01)
-    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.02, momentum=0.9)
+    # optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
+    optimizer_ft = optim.SGD( model_ft.parameters(), lr = 0.0002, momentum=0.9)
     return optimizer_ft
 
    

@@ -33,6 +33,16 @@ def get_size(start_path):
 
 data_t = transforms.Compose([transforms.Resize(256),transforms.CenterCrop(224)])
 def to_bmp(in_root, in_dirs, file_list, out_dir, limit=300):
+    pool = Pool(5)
+    def xform(args):
+        in_root,dir_in,file_in,file_out = args
+        try:
+            data_t(Image.open(
+                os.path.join(in_root,dir_in,file_in)
+            )).convert('RGB').save(file_out)
+        except OSError as e:
+            print(e)
+    arg_list = []
     for dir_in in in_dirs:
         temp_path = os.path.join(out_dir,dir_in)
         if not os.path.exists(temp_path) and os.path.isdir(os.path.join(in_root,dir_in)):
@@ -47,14 +57,11 @@ def to_bmp(in_root, in_dirs, file_list, out_dir, limit=300):
                 file_out = os.path.join(temp_path,out_name)
                 if not os.path.isfile(file_out):
                     # print(file_in, file_out)
-                    try:
-                        data_t(Image.open(
-                            os.path.join(in_root,dir_in,file_in)
-                        )).convert('RGB').save(file_out)
-                    except OSError as e:
-                        print(e)
-                        continue
-            print(temp_path, count)
+                    # xform(in_root,dir_in,file_in,file_out)
+                    arg_list.append((in_root,dir_in,file_in,file_out))
+            # print(temp_path, count)
+    pool.map(xform, arg_list)
+
 
 
 def compress(dir_list,file_list,cmp_dir,uncmp_root,tmp_qtable,limit=10):
@@ -144,7 +151,6 @@ def run(args):
             '--num_epochs','10',
         ]
         acc1,acc5 = run_train(train_args)
-        raise Exception('runrun')
     else:
         ### evaluate model
         logs += 'Evaluating...\n'
@@ -259,10 +265,14 @@ def run_train(args):
     # Train and evaluate
     model_ft, hist = train_model( args=args, model=model_ft, dataloaders=dataloaders_dict, criterion=criterion, optimizer=optimizer_ft, is_inception=(args.model_name=="inception") )
     #torch.save(model_ft.state_dict(), os.path.join(args.dir,"verification.final"))
-    return hist[-1]
+    best_acc = (0,0)
+    for acc1,acc5 in hist:
+        if acc1>best_acc[0]:
+            best_acc = (acc1,acc5)
+    return best_acc
 
 
-### convert jpeg images to bmp
+# ### convert jpeg images to bmp
 # dir_list = os.listdir('/data/ILSVRC2012/train_bmp300')
 # file_list = {}
 # for x in dir_list:
@@ -274,8 +284,8 @@ def run_train(args):
 
 gpu_id = 0
 retrain = True
-suffix = 'bound' # sorted,standard,bayesian5,bound,mab
-img_per_cls_train = 50
+suffix = 'standard' # standard,sorted,bayesian5,bound,mab
+img_per_cls_train = 100
 img_per_cls = 10
 subproc,procs = 0,1 # 0,1,2,3
 uncmp_root = '/data/ILSVRC2012/val_bmp_resize224'
@@ -359,8 +369,9 @@ arg_list = []
 if suffix == 'standard':
     ### For standard JPEG table with different quality
     for ind,qua in enumerate(range(5,101,5)):
-        logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(qua, df['rate'][ind], df['acc1'][ind])
-        run_standard((qua,logs))
+        if df['rate'][ind]>20 and df['rate'][ind]<24:
+            logs = 'Cross-validating quality: {} (CR:{},acc1:{})\n'.format(qua, df['rate'][ind], df['acc1'][ind])
+            run_standard((qua,logs))
 
 else:
     ### For customized JPEG tables
@@ -369,9 +380,15 @@ else:
     else:
         indexs = identify_pareto(source=metrics_file, dest=pareto_file)
     # pool = Pool(4)
-    indexs = np.random.choice(indexs,size=5,replace=False)
-    length = len(indexs)//procs
-    for ind in indexs[subproc*length:min((subproc+1)*length, len(indexs))]:
+    # indexs = np.random.choice(indexs,size=5,replace=False)
+
+    st_rate = 22.107518218126575
+    rates = np.abs(np.array(df['rate'][indexs]) - st_rate)
+    ri = np.array([(rates[i], indexs[i]) for i in range(len(rates))], dtype=[('x', float), ('y', int)])
+    ri.sort(order='x')
+    # length = len(indexs)//procs
+    # for ind in indexs[subproc*length:min((subproc+1)*length, len(indexs))]:
+    for rate, ind in ri[:2]:
         # if df['rate'][ind] > 20 and df['rate'][ind] < 30 and ind not in hist:
         if ind not in hist:
             logs = 'Cross-validating q-table: {} (CR:{},acc1:{})\n'.format(ind, df['rate'][ind], df['acc1'][ind])
